@@ -1,0 +1,71 @@
+[package]
+name = "tfmicro"
+version = "0.1.0"
+authors = ["Richard Meadows <richard@richard.fish>"]
+description = "Rust bindings for TensorFlow Micro"
+keywords = ["tensorflow", "tfmicro", "no_std", "embedded"]
+license = "MIT/Apache-2.0"
+repository = ""
+readme = "README.md"
+edition = "2018"
+documentation = ""
+
+[package.metadata.docs.rs]
+all-features = false
+no-default-features = true
+default-target = "x86_64-unknown-linux-gnu"
+
+# # filter in only necessary files
+# # tar tvaf target/package/tflite-*.crate | awk '{print $3 "\t" $6}' | sort -n
+# include = [
+#   "build.rs",
+#   "Cargo.toml",
+#   "*.md",
+#   "LICENSE-*",
+#   "data/",
+#   "csrc/",
+#   "src/",
+#   "submodules/downloads",
+#   "submodules/tensorflow/tensorflow/lite/c",
+#   "submodules/tensorflow/tensorflow/lite/core",
+#   "submodules/tensorflow/tensorflow/lite/delegates/nnapi",
+#   "submodules/tensorflow/tensorflow/lite/experimental/resource_variable",
+#   "submodules/tensorflow/tensorflow/lite/experimental/ruy",
+#   "submodules/tensorflow/tensorflow/lite/kernels",
+#   "submodules/tensorflow/tensorflow/lite/nnapi",
+#   "submodules/tensorflow/tensorflow/lite/profiling",
+#   "submodules/tensorflow/tensorflow/lite/schema/schema_generated.h",
+#   "submodules/tensorflow/tensorflow/lite/*.cc",
+#   "submodules/tensorflow/tensorflow/lite/*.h",
+#   "submodules/tensorflow/tensorflow/lite/tools/make",
+#   "submodules/tensorflow/third_party/eigen3",
+#   "submodules/tensorflow/third_party/fft2d",
+#   "submodules/tensorflow/tensorflow/core/kernels/eigen_convolution_helpers.h",
+#   "submodules/tensorflow/tensorflow/core/kernels/eigen_spatial_convolutions-inl.h",
+#   "submodules/tensorflow/tensorflow/core/public/version.h",
+# ]
+
+[dependencies]
+cpp = "0.5.4"
+libc = { version = "0.2.69", default-features = false }
+cty = "0.2.1"
+log = "0.4.8"
+
+[build-dependencies]
+cc = { version = "1.0.52", features = ["parallel"] }
+bindgen = "0.53.2"
+cpp_build = "0.5.4"
+glob = "0.3.0"
+fs_extra = "1.1.0"
+
+[dev-dependencies]
+env_logger = "0.7.1"
+
+[features]
+build = []
+
+
+
+[patch.crates-io]
+cpp_build = { path = "/scratch/rust-cpp/cpp_build" }
+cpp_macros = { path = "/scratch/rust-cpp/cpp_macros" }
