@@ -64,9 +64,9 @@ fn cc_tensorflow_library() {
     let tflite = prepare_tensorflow_source();
     let out_dir = env::var("OUT_DIR").unwrap();
     let tf_lib_name =
-        Path::new(&out_dir).join(format!("libtensorflow-microlife.a"));
+        Path::new(&out_dir).join(format!("libtensorflow-microlite.a"));
 
-    if !tf_lib_name.exists() {
+    if !tf_lib_name.exists() || cfg!(feature = "build") {
         println!("Building tflite");
         let start = Instant::now();
 
@@ -102,6 +102,12 @@ fn cc_tensorflow_library() {
             .compile("tensorflow-microlite");
 
         println!("Building tflite from source took {:?}", start.elapsed());
+    } else {
+        println!("Didn't rebuild tflite, using {:?}", tf_lib_name);
+
+        println!("cargo:rustc-link-lib=static=tensorflow-microlite");
+        println!("cargo:rustc-link-search=native={}", out_dir);
+        println!("cargo:rustc-link-lib=stdc++");
     }
 }
 
@@ -110,8 +116,13 @@ fn cc_tensorflow_library() {
 fn bindgen_tflite_types() {
     use bindgen::*;
 
+    let target_triple = env::var("TARGET").expect("Unable to get TARGET");
     let submodules = submodules();
     let submodules_str = submodules.to_string_lossy();
+
+    println!("Running bindgen");
+    let start = Instant::now();
+
     let bindings = Builder::default()
         .whitelist_recursively(true)
         .prepend_enum_name(false)
@@ -152,6 +163,8 @@ fn bindgen_tflite_types() {
             flatbuffers_include_dir().to_string_lossy()
         ))
         .clang_arg("-DGEMMLOWP_ALLOW_SLOW_SCALAR_FALLBACK")
+        .clang_arg("-target")
+        .clang_arg(target_triple)
         .clang_arg("-x")
         .clang_arg("c++")
         .clang_arg("-std=c++11");
@@ -164,10 +177,15 @@ fn bindgen_tflite_types() {
     bindings
         .write_to_file(out_path)
         .expect("Couldn't write bindings!");
+
+    println!("Running bindgen took {:?}", start.elapsed());
 }
 
 fn build_inline_cpp() {
     let submodules = submodules();
+
+    println!("Building inline cpp");
+    let start = Instant::now();
 
     cpp_build::Config::new()
         .include(submodules.join("tensorflow"))
@@ -180,6 +198,8 @@ fn build_inline_cpp() {
         .debug(true)
         .opt_level(if cfg!(debug_assertions) { 0 } else { 2 })
         .build("src/lib.rs");
+
+    println!("Building inline cpp took {:?}", start.elapsed());
 }
 
 fn main() {
