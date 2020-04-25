@@ -47,9 +47,8 @@ default-target = "x86_64-unknown-linux-gnu"
 
 [dependencies]
 cpp = "0.5.4"
-libc = { version = "0.2.69", default-features = false }
 cty = "0.2.1"
-log = "0.4.8"
+log = { version = "0.4.8", default-features = false }
 
 [build-dependencies]
 cc = { version = "1.0.52", features = ["parallel"] }
@@ -68,5 +67,6 @@ build = []
 
 
 [patch.crates-io]
-cpp_build = { path = "/scratch/rust-cpp/cpp_build" }
-cpp_macros = { path = "/scratch/rust-cpp/cpp_macros" }
+cpp = { path = "../rust-cpp/cpp" }
+cpp_build = { path = "../rust-cpp/cpp_build" }
+cpp_macros = { path = "../rust-cpp/cpp_macros" }

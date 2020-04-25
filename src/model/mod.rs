@@ -6,8 +6,7 @@
 use core::ops::{Deref, DerefMut};
 use core::{fmt, mem, slice};
 
-use libc::c_void;
-use libc::size_t;
+use cty::size_t;
 
 // use stl::memory::UniquePtr;
 // use stl::string::String as StlString;

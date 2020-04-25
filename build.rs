@@ -75,11 +75,67 @@ fn get_cc_files_glob(path: PathBuf) -> Vec<String> {
         .collect()
 }
 
+trait CompilationBuilder {
+    fn flag(&mut self, s: &str) -> &mut Self;
+    fn define(&mut self, var: &str, val: Option<&str>) -> &mut Self;
+
+    /// Build flags for tensorflow micro sources
+    fn tensorflow_build_setup(&mut self) -> &mut Self {
+        self.flag("-fno-rtti") // No Runtime type information
+            .flag("-fmessage-length=0")
+            .flag("-fno-exceptions")
+            .flag("-fno-unwind-tables")
+            .flag("-fno-builtin")
+            .flag("-ffunction-sections")
+            .flag("-fdata-sections")
+            .flag("-funsigned-char")
+            .flag("-MMD")
+            .flag("-std=gnu++11")
+            .flag("-Wvla")
+            .flag("-Wall")
+            .flag("-Wextra")
+            .flag("-Wno-unused-parameter")
+            .flag("-Wno-missing-field-initializers")
+            .flag("-Wno-write-strings")
+            .flag("-Wno-sign-compare")
+            .flag("-Wunused-function")
+            .flag("-fno-delete-null-pointer-checks")
+            .flag("-fomit-frame-pointer")
+            .flag("-fpermissive")
+            .flag("-fno-use-cxa-atexit")
+            .define("TF_LITE_STATIC_MEMORY", None)
+            .define("TF_LITE_MCU_DEBUG_LOG", None)
+            .define("GEMMLOWP_ALLOW_SLOW_SCALAR_FALLBACK", None)
+    }
+}
+impl CompilationBuilder for cpp_build::Config {
+    fn flag(&mut self, s: &str) -> &mut Self {
+        self.flag(s)
+    }
+    fn define(&mut self, var: &str, val: Option<&str>) -> &mut Self {
+        self.define(var, val)
+    }
+}
+impl CompilationBuilder for cc::Build {
+    fn flag(&mut self, s: &str) -> &mut Self {
+        self.flag(s)
+    }
+    fn define(&mut self, var: &str, val: Option<&str>) -> &mut Self {
+        self.define(var, val)
+    }
+}
+
 fn cc_tensorflow_library() {
     let tflite = prepare_tensorflow_source();
     let out_dir = env::var("OUT_DIR").unwrap();
     let tf_lib_name =
         Path::new(&out_dir).join(format!("libtensorflow-microlite.a"));
+
+    if is_cross_compiling().unwrap() {
+        println!("cargo:rustc-link-search=native=/usr/bin/../lib/gcc/arm-none-eabi/7.3.1/../../../../arm-none-eabi/lib/thumb/v6-m");
+
+        println!("cargo:rustc-link-lib=static=m");
+    }
 
     if !tf_lib_name.exists() || cfg!(feature = "build") {
         println!("Building tflite");
@@ -87,11 +143,11 @@ fn cc_tensorflow_library() {
 
         cc::Build::new()
             .cpp(true)
-            .flag("-std=c++11")
+            .tensorflow_build_setup()
+            .cpp_link_stdlib(None)
             //.flag("-O3")
             .warnings(false) // TODO remove
             .extra_warnings(false)
-            .define("TF_LITE_STATIC_MEMORY", None)
             .include(tflite.parent().unwrap())
             .include(tflite.join("lite/micro/tools/make/downloads"))
             .include(tflite.join("lite/micro/tools/make/downloads/gemmlowp"))
@@ -122,7 +178,6 @@ fn cc_tensorflow_library() {
 
         println!("cargo:rustc-link-lib=static=tensorflow-microlite");
         println!("cargo:rustc-link-search=native={}", out_dir);
-        println!("cargo:rustc-link-lib=stdc++");
     }
 }
 
@@ -197,65 +252,71 @@ fn bindgen_tflite_types() {
 
     let submodules = submodules();
     let submodules_str = submodules.to_string_lossy();
+    let out_dir = env::var("OUT_DIR").unwrap();
+    let tflite_types_name = Path::new(&out_dir).join("tflite_types.rs");
 
-    println!("Running bindgen");
-    let start = Instant::now();
+    if !tflite_types_name.exists() || cfg!(feature = "build") {
+        println!("Running bindgen");
+        let start = Instant::now();
 
-    let bindings = bindgen_cross_builder()
-        .expect("Error setting up bindgen for cross compiling")
-        .whitelist_recursively(true)
-        .prepend_enum_name(false)
-        .impl_debug(true)
-        .with_codegen_config(CodegenConfig::TYPES)
-        .layout_tests(false)
-        .enable_cxx_namespaces()
-        .derive_default(true)
-        .size_t_is_usize(true)
-        .use_core()
-        .ctypes_prefix("cty")
-        // Types
-        .whitelist_type("tflite::ErrorReporter")
-        .opaque_type("tflite::ErrorReporter")
-        .whitelist_type("tflite::Model")
-        .opaque_type("tflite::Model")
-        .whitelist_type("tflite::MicroInterpreter")
-        .opaque_type("tflite::MicroInterpreter")
-        .whitelist_type("tflite::ops::micro::AllOpsResolver")
-        .opaque_type("tflite::ops::micro::AllOpsResolver")
-        .whitelist_type("tflite::MicroOpResolver")
-        .opaque_type("tflite::MicroOpResolver")
-        .whitelist_type("TfLiteTensor")
-        // Types - blacklist
-        .blacklist_type("std")
-        .blacklist_type("tflite::Interpreter_TfLiteDelegatePtr")
-        .blacklist_type("tflite::Interpreter_State")
-        .default_enum_style(EnumVariation::Rust {
-            non_exhaustive: false,
-        })
-        .derive_partialeq(true)
-        .derive_eq(true)
-        .header("csrc/tflite_wrapper.hpp")
-        .clang_arg(format!("-I{}/tensorflow", submodules_str))
-        .clang_arg(format!(
-            // -> flatbuffers/flatbuffers.h
-            "-I{}",
-            flatbuffers_include_dir().to_string_lossy()
-        ))
-        .clang_arg("-DGEMMLOWP_ALLOW_SLOW_SCALAR_FALLBACK")
-        //.clang_arg("-stdlib=libc++")
-        .clang_arg("-xc++")
-        .clang_arg("-std=c++11");
+        let bindings = bindgen_cross_builder()
+            .expect("Error setting up bindgen for cross compiling")
+            .whitelist_recursively(true)
+            .prepend_enum_name(false)
+            .impl_debug(true)
+            .with_codegen_config(CodegenConfig::TYPES)
+            .layout_tests(false)
+            .enable_cxx_namespaces()
+            .derive_default(true)
+            .size_t_is_usize(true)
+            .use_core()
+            .ctypes_prefix("cty")
+            // Types
+            .whitelist_type("tflite::ErrorReporter")
+            .opaque_type("tflite::ErrorReporter")
+            .whitelist_type("tflite::Model")
+            .opaque_type("tflite::Model")
+            .whitelist_type("tflite::MicroInterpreter")
+            .opaque_type("tflite::MicroInterpreter")
+            .whitelist_type("tflite::ops::micro::AllOpsResolver")
+            .opaque_type("tflite::ops::micro::AllOpsResolver")
+            .whitelist_type("tflite::MicroOpResolver")
+            .opaque_type("tflite::MicroOpResolver")
+            .whitelist_type("TfLiteTensor")
+            // Types - blacklist
+            .blacklist_type("std")
+            .blacklist_type("tflite::Interpreter_TfLiteDelegatePtr")
+            .blacklist_type("tflite::Interpreter_State")
+            .default_enum_style(EnumVariation::Rust {
+                non_exhaustive: false,
+            })
+            .derive_partialeq(true)
+            .derive_eq(true)
+            .header("csrc/tflite_wrapper.hpp")
+            .clang_arg(format!("-I{}/tensorflow", submodules_str))
+            .clang_arg(format!(
+                // -> flatbuffers/flatbuffers.h
+                "-I{}",
+                flatbuffers_include_dir().to_string_lossy()
+            ))
+            .clang_arg("-DGEMMLOWP_ALLOW_SLOW_SCALAR_FALLBACK")
+            //.clang_arg("-stdlib=libc++")
+            .clang_arg("-xc++")
+            .clang_arg("-std=c++11");
 
-    let bindings = bindings.generate().expect("Unable to generate bindings");
+        let bindings =
+            bindings.generate().expect("Unable to generate bindings");
 
-    // Write the bindings to $OUT_DIR/tflite_types.rs
-    let out_path =
-        PathBuf::from(env::var("OUT_DIR").unwrap()).join("tflite_types.rs");
-    bindings
-        .write_to_file(out_path)
-        .expect("Couldn't write bindings!");
+        // Write the bindings to $OUT_DIR/tflite_types.rs
+        let out_path = PathBuf::from(out_dir).join("tflite_types.rs");
+        bindings
+            .write_to_file(out_path)
+            .expect("Couldn't write bindings!");
 
-    println!("Running bindgen took {:?}", start.elapsed());
+        println!("Running bindgen took {:?}", start.elapsed());
+    } else {
+        println!("Didn't regenerate bindings");
+    }
 }
 
 fn build_inline_cpp() {
@@ -267,11 +328,9 @@ fn build_inline_cpp() {
     cpp_build::Config::new()
         .include(submodules.join("tensorflow"))
         .include(flatbuffers_include_dir())
+        .tensorflow_build_setup()
         .cpp_link_stdlib(None)
-        .flag("-fPIC")
-        .flag("-std=c++14")
-        .flag("-Wno-sign-compare")
-        .define("GEMMLOWP_ALLOW_SLOW_SCALAR_FALLBACK", None)
+        //.flag("-std=c++14")
         .debug(true)
         .opt_level(if cfg!(debug_assertions) { 0 } else { 2 })
         .build("src/lib.rs");
