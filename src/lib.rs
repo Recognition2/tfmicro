@@ -1,16 +1,31 @@
 #![recursion_limit = "8192"]
 #![no_std]
 
+use core::slice;
+use core::str;
+
 #[macro_use]
 extern crate log;
 #[macro_use]
 extern crate cpp;
+
+extern crate libc;
 
 mod bindings;
 // mod interpreter;
 pub mod model;
 
 // pub use interpreter::*;
+
+#[no_mangle]
+pub extern "C" fn DebugLog(s: *const cty::c_char) {
+    let slice = unsafe {
+        let len = libc::strlen(s);
+        let ptr = s as *const u8;
+        slice::from_raw_parts(ptr, len as usize + 1)
+    };
+    info!("{}", str::from_utf8(slice).unwrap().trim());
+}
 
 pub fn do_it(model: &[u8; 18288], yes: &[u8; 1960], no: &[u8; 1960]) -> bool {
     info!("Starting test...");

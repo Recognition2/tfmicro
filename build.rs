@@ -71,6 +71,7 @@ fn get_cc_files_glob(path: PathBuf) -> Vec<String> {
     paths
         .into_iter()
         .filter(|p| !p.contains("test.cc"))
+        .filter(|p| !p.contains("debug_log.cc"))
         .collect()
 }
 
