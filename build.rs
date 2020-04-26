@@ -14,6 +14,7 @@ use glob::glob;
 
 use std::env;
 use std::path::{Path, PathBuf};
+use std::process::Command;
 use std::time::Instant;
 
 fn manifest_dir() -> PathBuf {
@@ -28,13 +29,26 @@ fn flatbuffers_include_dir() -> PathBuf {
     submodules().join("tensorflow/tensorflow/lite/micro/tools/make/downloads/flatbuffers/include")
 }
 
-pub fn is_cross_compiling() -> Result<bool> {
+fn is_cross_compiling() -> Result<bool> {
     Ok(env::var("TARGET")? != env::var("HOST")?)
+}
+
+fn get_command_result(command: &mut Command) -> Result<String> {
+    command
+        .output()
+        .chain_err(|| "Couldn't find target GCC executable.")
+        .and_then(|output| {
+            if output.status.success() {
+                Ok(String::from_utf8(output.stdout)?)
+            } else {
+                panic!("Couldn't read output from GCC.")
+            }
+        })
 }
 
 /// Move tensorflow source to $OUT_DIR
 fn prepare_tensorflow_source() -> PathBuf {
-    println!("Moving tflite source");
+    println!("Moving tensorflow micro source");
     let start = Instant::now();
     let out_dir = PathBuf::from(env::var("OUT_DIR").unwrap());
     let tf_src_dir = out_dir.join("tensorflow/tensorflow");
@@ -132,13 +146,24 @@ fn cc_tensorflow_library() {
         Path::new(&out_dir).join(format!("libtensorflow-microlite.a"));
 
     if is_cross_compiling().unwrap() {
-        println!("cargo:rustc-link-search=native=/usr/bin/../lib/gcc/arm-none-eabi/7.3.1/../../../../arm-none-eabi/lib/thumb/v6-m");
+        // Find include directory used by the crosscompiler for libm
+        let mut gcc = cc::Build::new().get_compiler().to_command();
+        let libm_location = PathBuf::from(
+            get_command_result(gcc.arg("--print-file-name=libm.a"))
+                .expect("Error querying gcc for libm location"),
+        );
+        let libm_path = libm_location.parent().unwrap();
 
+        // Pass this to the linker
+        println!(
+            "cargo:rustc-link-search=native={}",
+            libm_path.to_string_lossy()
+        );
         println!("cargo:rustc-link-lib=static=m");
     }
 
     if !tf_lib_name.exists() || cfg!(feature = "build") {
-        println!("Building tflite");
+        println!("Building tensorflow micro");
         let start = Instant::now();
 
         cc::Build::new()
@@ -172,9 +197,12 @@ fn cc_tensorflow_library() {
             .file(tflite.join("lite/micro/testing/test_utils.cc"))
             .compile("tensorflow-microlite");
 
-        println!("Building tflite from source took {:?}", start.elapsed());
+        println!(
+            "Building tensorflow micro from source took {:?}",
+            start.elapsed()
+        );
     } else {
-        println!("Didn't rebuild tflite, using {:?}", tf_lib_name);
+        println!("Didn't rebuild tensorflow micro, using {:?}", tf_lib_name);
 
         println!("cargo:rustc-link-lib=static=tensorflow-microlite");
         println!("cargo:rustc-link-search=native={}", out_dir);
@@ -192,19 +220,8 @@ fn bindgen_cross_builder() -> Result<bindgen::Builder> {
         println!("Setting bindgen to cross compile to {}", target);
 
         // Find the sysroot used by the crosscompiler, and pass this to clang
-        let path = cc::Build::new()
-            .get_compiler()
-            .to_command()
-            .arg("--print-sysroot")
-            .output()
-            .chain_err(|| "Couldn't find target GCC executable.")
-            .and_then(|output| {
-                if output.status.success() {
-                    Ok(String::from_utf8(output.stdout)?)
-                } else {
-                    panic!("Couldn't determine target GCC sysroot.")
-                }
-            })?;
+        let mut gcc = cc::Build::new().get_compiler().to_command();
+        let path = get_command_result(gcc.arg("--print-sysroot"))?;
         let builder = builder.clang_arg(format!("--sysroot={}", path.trim()));
 
         // Add a path to the system headers for the target
