@@ -7,9 +7,11 @@ extern crate log;
 extern crate cpp;
 
 mod bindings;
-// mod interpreter;
 mod interop;
+mod interpreter;
 pub mod model;
+
+use interpreter::Tensor;
 
 pub fn do_it(model: &[u8; 18288], yes: &[u8; 1960], no: &[u8; 1960]) -> bool {
     info!("Starting test...");
