@@ -170,7 +170,6 @@ fn cc_tensorflow_library() {
             .cpp(true)
             .tensorflow_build_setup()
             .cpp_link_stdlib(None)
-            //.flag("-O3")
             .warnings(false) // TODO remove
             .extra_warnings(false)
             .include(tflite.parent().unwrap())
@@ -317,7 +316,6 @@ fn bindgen_tflite_types() {
                 flatbuffers_include_dir().to_string_lossy()
             ))
             .clang_arg("-DGEMMLOWP_ALLOW_SLOW_SCALAR_FALLBACK")
-            //.clang_arg("-stdlib=libc++")
             .clang_arg("-xc++")
             .clang_arg("-std=c++11");
 
@@ -348,8 +346,6 @@ fn build_inline_cpp() {
         .tensorflow_build_setup()
         .cpp_link_stdlib(None)
         //.flag("-std=c++14")
-        .debug(true)
-        .opt_level(if cfg!(debug_assertions) { 0 } else { 2 })
         .build("src/lib.rs");
 
     println!("Building inline cpp took {:?}", start.elapsed());
