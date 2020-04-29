@@ -15,12 +15,22 @@ mod micro_op_resolver;
 pub mod model;
 
 use interpreter::Tensor;
+use micro_interpreter::MicroInterpreter;
 
 pub fn do_it(model: &[u8; 18288], yes: &[u8; 1960], no: &[u8; 1960]) -> bool {
     info!("Starting test...");
 
     unsafe {
-        let model = model::Model::from_buffer(&model[..]);
+        // Map the model into a usable data structure. This doesn't involve
+        // any copying or parsing, it's a very lightweight operation.
+        let model = model::Model::from_buffer(&model[..]).unwrap();
+
+        const TENSOR_ARENA_SIZE: usize = 10 * 1024;
+        let mut tensor_arena: [u8; TENSOR_ARENA_SIZE] = [0; TENSOR_ARENA_SIZE];
+
+        let _interpreter =
+            MicroInterpreter::new(&model, &mut tensor_arena, TENSOR_ARENA_SIZE);
+        // Do not use _interpreter - it will segfault!
 
         cpp! {{
             #include "tensorflow/lite/micro/kernels/micro_ops.h"
@@ -59,9 +69,7 @@ pub fn do_it(model: &[u8; 18288], yes: &[u8; 1960], no: &[u8; 1960]) -> bool {
             tflite::ErrorReporter* error_reporter = &micro_error_reporter;
             micro_test::reporter = &micro_error_reporter;
 
-            // Map the model into a usable data structure. This doesn't involve any
-            // copying or parsing, it's a very lightweight operation.
-            //const tflite::Model* model = ::tflite::GetModel(model_definition);
+            // Check model version
             if (model->version() != TFLITE_SCHEMA_VERSION) {
                 TF_LITE_REPORT_ERROR(error_reporter,
                                      "Model provided is schema version %d not equal "
