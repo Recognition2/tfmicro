@@ -7,11 +7,12 @@ extern crate log;
 extern crate cpp;
 
 mod bindings;
-mod error_reporter;
 mod interop;
 mod interpreter;
+mod micro_error_reporter;
 mod micro_interpreter;
 mod micro_op_resolver;
+
 pub mod model;
 
 use interpreter::Tensor;

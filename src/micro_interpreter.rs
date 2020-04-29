@@ -2,7 +2,7 @@
 
 use core::marker::PhantomData;
 
-use crate::error_reporter::ErrorReporter;
+use crate::micro_error_reporter::MicroErrorReporter;
 use crate::micro_op_resolver::MicroOpResolver;
 use crate::model::Model;
 
