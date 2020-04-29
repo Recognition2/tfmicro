@@ -294,10 +294,8 @@ fn bindgen_tflite_types() {
             .opaque_type("tflite::Model")
             .whitelist_type("tflite::MicroInterpreter")
             .opaque_type("tflite::MicroInterpreter")
-            .whitelist_type("tflite::MicroOpResolver")
-            .opaque_type("tflite::MicroOpResolver")
-            .whitelist_type("tflite::OpResolver")
-            .opaque_type("tflite::OpResolver")
+            .whitelist_type("tflite::MicroMutableOpResolver")
+            .opaque_type("tflite::MicroMutableOpResolver")
             .whitelist_type("TfLiteTensor")
             // Types - blacklist
             .blacklist_type("std")

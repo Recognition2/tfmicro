@@ -10,7 +10,7 @@ use crate::bindings::tflite;
 
 cpp! {{
     #include "tensorflow/lite/micro/micro_interpreter.h"
-    #include "tensorflow/lite/micro/kernels/all_ops_resolver.h"
+    #include "tensorflow/lite/micro/micro_mutable_op_resolver.h"
 }}
 
 pub struct MicroInterpreter<'a> {
@@ -33,11 +33,12 @@ impl<'a> MicroInterpreter<'a> {
     // doesn't do any deallocation of any of the pointed-to objects,
     // ownership remains with the caller."
 
-    pub fn new<'m: 'a, 't: 'a>(
+    pub fn new<'m: 'a, 't: 'a, 'e: 'a>(
         model: &'m Model,
-        //micro_op_resolvner: MicroOpResolver,
+        resolver: MicroOpResolver,
         tensor_arena: &'t mut [u8],
         tensor_arena_size: usize,
+        micro_error_reporter: &'e MicroErrorReporter
     ) -> Self {
         let tensor_arena = tensor_arena.as_ptr();
 
@@ -45,16 +46,14 @@ impl<'a> MicroInterpreter<'a> {
         let micro_interpreter = unsafe {
             cpp! ([
                 model as "const tflite::Model*",
+                resolver as "tflite::MicroMutableOpResolver",
                 tensor_arena as "uint8_t*",
-                tensor_arena_size as "size_t"
+                tensor_arena_size as "size_t",
+                micro_error_reporter as "tflite::MicroErrorReporter*"
             ] -> tflite::MicroInterpreter as "tflite::MicroInterpreter"
               {
-                  // Use the tensorflow error reporting framework
-                  tflite::MicroErrorReporter micro_error_reporter;
-                  tflite::ErrorReporter* error_reporter = &micro_error_reporter;
-
-                  // For now, just use the all ops resolver
-                  tflite::ops::micro::AllOpsResolver resolver;
+                  tflite::ErrorReporter* error_reporter =
+                      micro_error_reporter;
 
                   // Build an interpreter to run the model with.
                   tflite::MicroInterpreter interpreter(model,

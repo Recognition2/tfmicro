@@ -17,6 +17,8 @@ pub mod model;
 
 use interpreter::Tensor;
 use micro_interpreter::MicroInterpreter;
+use micro_error_reporter::MicroErrorReporter;
+use micro_op_resolver::MicroOpResolver;
 
 pub fn do_it(model: &[u8; 18288], yes: &[u8; 1960], no: &[u8; 1960]) -> bool {
     info!("Starting test...");
@@ -29,9 +31,14 @@ pub fn do_it(model: &[u8; 18288], yes: &[u8; 1960], no: &[u8; 1960]) -> bool {
         const TENSOR_ARENA_SIZE: usize = 10 * 1024;
         let mut tensor_arena: [u8; TENSOR_ARENA_SIZE] = [0; TENSOR_ARENA_SIZE];
 
+        let error_reporter = MicroErrorReporter::new();
+        let micro_op_resolver = MicroOpResolver::new();
         let _interpreter =
-            MicroInterpreter::new(&model, &mut tensor_arena, TENSOR_ARENA_SIZE);
-        // Do not use _interpreter - it will segfault!
+            MicroInterpreter::new(&model,
+                                  micro_op_resolver,
+                                  &mut tensor_arena,
+                                  TENSOR_ARENA_SIZE,
+                                  &error_reporter);
 
         cpp! {{
             #include "tensorflow/lite/micro/kernels/micro_ops.h"
