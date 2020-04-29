@@ -28,12 +28,17 @@ pub fn do_it(model: &[u8; 18288], yes: &[u8; 1960], no: &[u8; 1960]) -> bool {
         // any copying or parsing, it's a very lightweight operation.
         let model = model::Model::from_buffer(&model[..]).unwrap();
 
+        // Create an area of memory to use for input, output, and
+        // intermediate arrays.
         const TENSOR_ARENA_SIZE: usize = 10 * 1024;
         let mut tensor_arena: [u8; TENSOR_ARENA_SIZE] = [0; TENSOR_ARENA_SIZE];
 
-        let error_reporter = MicroErrorReporter::new();
+        // Pull in all operation implementations
         let micro_op_resolver = MicroOpResolver::new();
-        let _interpreter =
+
+        // Build an interpreter to run the model with
+        let error_reporter = MicroErrorReporter::new();
+        let rusty_interpreter =
             MicroInterpreter::new(&model,
                                   micro_op_resolver,
                                   &mut tensor_arena,
@@ -63,7 +68,7 @@ pub fn do_it(model: &[u8; 18288], yes: &[u8; 1960], no: &[u8; 1960]) -> bool {
         let yes_features_data = yes.as_ptr();
         let no_features_data = no.as_ptr();
 
-        let result = cpp! ([model as "const tflite::Model*",
+        let result = cpp! ([rusty_interpreter as "tflite::MicroInterpreter",
                             yes_features_data as "const uint8_t*",
                             no_features_data as "const uint8_t*"] -> bool as "bool" {
 
@@ -77,38 +82,40 @@ pub fn do_it(model: &[u8; 18288], yes: &[u8; 1960], no: &[u8; 1960]) -> bool {
             tflite::ErrorReporter* error_reporter = &micro_error_reporter;
             micro_test::reporter = &micro_error_reporter;
 
-            // Check model version
-            if (model->version() != TFLITE_SCHEMA_VERSION) {
-                TF_LITE_REPORT_ERROR(error_reporter,
-                                     "Model provided is schema version %d not equal "
-                                     "to supported version %d.\n",
-                                     model->version(), TFLITE_SCHEMA_VERSION);
-            }
+            // // Check model version
+            // if (model->version() != TFLITE_SCHEMA_VERSION) {
+            //     TF_LITE_REPORT_ERROR(error_reporter,
+            //                          "Model provided is schema version %d not equal "
+            //                          "to supported version %d.\n",
+            //                          model->version(), TFLITE_SCHEMA_VERSION);
+            // }
 
-            // Pull in only the operation implementations we need.
-            // This relies on a complete list of all the ops needed by this graph.
-            // An easier approach is to just use the AllOpsResolver, but this will
-            // incur some penalty in code space for op implementations that are not
-            // needed by this graph.
-            //
-            // tflite::ops::micro::AllOpsResolver resolver;
-            tflite::MicroOpResolver<3> micro_op_resolver;
-            micro_op_resolver.AddBuiltin(
-                tflite::BuiltinOperator_DEPTHWISE_CONV_2D,
-                tflite::ops::micro::Register_DEPTHWISE_CONV_2D());
-            micro_op_resolver.AddBuiltin(tflite::BuiltinOperator_FULLY_CONNECTED,
-                                         tflite::ops::micro::Register_FULLY_CONNECTED());
-            micro_op_resolver.AddBuiltin(tflite::BuiltinOperator_SOFTMAX,
-                                         tflite::ops::micro::Register_SOFTMAX());
+            // // Pull in only the operation implementations we need.
+            // // This relies on a complete list of all the ops needed by this graph.
+            // // An easier approach is to just use the AllOpsResolver, but this will
+            // // incur some penalty in code space for op implementations that are not
+            // // needed by this graph.
+            // //
+            // // tflite::ops::micro::AllOpsResolver resolver;
+            // tflite::MicroOpResolver<3> micro_op_resolver;
+            // micro_op_resolver.AddBuiltin(
+            //     tflite::BuiltinOperator_DEPTHWISE_CONV_2D,
+            //     tflite::ops::micro::Register_DEPTHWISE_CONV_2D());
+            // micro_op_resolver.AddBuiltin(tflite::BuiltinOperator_FULLY_CONNECTED,
+            //                              tflite::ops::micro::Register_FULLY_CONNECTED());
+            // micro_op_resolver.AddBuiltin(tflite::BuiltinOperator_SOFTMAX,
+            //                              tflite::ops::micro::Register_SOFTMAX());
 
-            // Create an area of memory to use for input, output, and intermediate arrays.
-            const int tensor_arena_size = 10 * 1024;
-            uint8_t tensor_arena[tensor_arena_size];
+            // // Create an area of memory to use for input, output, and intermediate arrays.
+            // const int tensor_arena_size = 10 * 1024;
+            // uint8_t tensor_arena[tensor_arena_size];
 
-            // Build an interpreter to run the model with.
-            tflite::MicroInterpreter interpreter(model, micro_op_resolver, tensor_arena,
-                                                 tensor_arena_size, error_reporter);
-            interpreter.AllocateTensors();
+            // // Build an interpreter to run the model with.
+            // tflite::MicroInterpreter interpreter(model, micro_op_resolver, tensor_arena,
+            //                                      tensor_arena_size, error_reporter);
+            // interpreter.AllocateTensors();
+
+            tflite::MicroInterpreter interpreter = rusty_interpreter;
 
             // Get information about the memory area to use for the model's input.
             TfLiteTensor* input = interpreter.input(0);
