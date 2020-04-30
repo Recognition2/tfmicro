@@ -33,7 +33,7 @@ pub fn do_it(model: &[u8; 18288], yes: &[u8; 1960], no: &[u8; 1960]) -> bool {
     let mut tensor_arena: [u8; TENSOR_ARENA_SIZE] = [0; TENSOR_ARENA_SIZE];
 
     // Pull in all operation implementations
-    let micro_op_resolver = MicroOpResolver::new();
+    let micro_op_resolver = MicroOpResolver::new_for_microspeech();
 
     // Build an interpreter to run the model with
     let error_reporter = MicroErrorReporter::new();
