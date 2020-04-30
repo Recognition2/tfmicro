@@ -23,27 +23,27 @@ use micro_op_resolver::MicroOpResolver;
 pub fn do_it(model: &[u8; 18288], yes: &[u8; 1960], no: &[u8; 1960]) -> bool {
     info!("Starting test...");
 
+    // Map the model into a usable data structure. This doesn't involve
+    // any copying or parsing, it's a very lightweight operation.
+    let model = model::Model::from_buffer(&model[..]).unwrap();
+
+    // Create an area of memory to use for input, output, and
+    // intermediate arrays.
+    const TENSOR_ARENA_SIZE: usize = 10 * 1024;
+    let mut tensor_arena: [u8; TENSOR_ARENA_SIZE] = [0; TENSOR_ARENA_SIZE];
+
+    // Pull in all operation implementations
+    let micro_op_resolver = MicroOpResolver::new();
+
+    // Build an interpreter to run the model with
+    let error_reporter = MicroErrorReporter::new();
+    let rusty_interpreter = MicroInterpreter::new(&model,
+                                                  micro_op_resolver,
+                                                  &mut tensor_arena,
+                                                  TENSOR_ARENA_SIZE,
+                                                  &error_reporter);
+
     unsafe {
-        // Map the model into a usable data structure. This doesn't involve
-        // any copying or parsing, it's a very lightweight operation.
-        let model = model::Model::from_buffer(&model[..]).unwrap();
-
-        // Create an area of memory to use for input, output, and
-        // intermediate arrays.
-        const TENSOR_ARENA_SIZE: usize = 10 * 1024;
-        let mut tensor_arena: [u8; TENSOR_ARENA_SIZE] = [0; TENSOR_ARENA_SIZE];
-
-        // Pull in all operation implementations
-        let micro_op_resolver = MicroOpResolver::new();
-
-        // Build an interpreter to run the model with
-        let error_reporter = MicroErrorReporter::new();
-        let rusty_interpreter =
-            MicroInterpreter::new(&model,
-                                  micro_op_resolver,
-                                  &mut tensor_arena,
-                                  TENSOR_ARENA_SIZE,
-                                  &error_reporter);
 
         cpp! {{
             #include "tensorflow/lite/micro/kernels/micro_ops.h"
