@@ -2,15 +2,22 @@
 
 use core::marker::PhantomData;
 
+use crate::interpreter::Tensor;
 use crate::micro_error_reporter::MicroErrorReporter;
 use crate::micro_op_resolver::MicroOpResolver;
 use crate::model::Model;
 
+use crate::bindings;
 use crate::bindings::tflite;
 
 cpp! {{
     #include "tensorflow/lite/micro/micro_interpreter.h"
     #include "tensorflow/lite/micro/micro_mutable_op_resolver.h"
+    #include "tensorflow/lite/micro/kernels/micro_ops.h"
+    #include "tensorflow/lite/micro/micro_error_reporter.h"
+    #include "tensorflow/lite/micro/testing/micro_test.h"
+    #include "tensorflow/lite/schema/schema_generated.h"
+    #include "tensorflow/lite/version.h"
 }}
 
 pub struct MicroInterpreter<'a> {
@@ -38,7 +45,7 @@ impl<'a> MicroInterpreter<'a> {
         resolver: MicroOpResolver,
         tensor_arena: &'t mut [u8],
         tensor_arena_size: usize,
-        micro_error_reporter: &'e MicroErrorReporter
+        micro_error_reporter: &'e MicroErrorReporter,
     ) -> Self {
         let tensor_arena = tensor_arena.as_ptr();
 
@@ -52,9 +59,7 @@ impl<'a> MicroInterpreter<'a> {
                 micro_error_reporter as "tflite::MicroErrorReporter*"
             ] -> tflite::MicroInterpreter as "tflite::MicroInterpreter"
               {
-                  tflite::ErrorReporter* error_reporter =
-                      micro_error_reporter;
-
+                  tflite::ErrorReporter* error_reporter = micro_error_reporter;
                   // Build an interpreter to run the model with.
                   tflite::MicroInterpreter interpreter(model,
                                                        resolver,
@@ -72,6 +77,20 @@ impl<'a> MicroInterpreter<'a> {
         Self {
             micro_interpreter,
             _phantom: PhantomData,
+        }
+    }
+
+    pub fn input(&self, n: usize) -> &'a Tensor {
+        let micro_interpreter = &self.micro_interpreter;
+        unsafe {
+            let inp = cpp!([micro_interpreter as "tflite::MicroInterpreter*",
+                n as "uint64_t"] -> *mut bindings::TfLiteTensor as "TfLiteTensor*" {
+
+                return micro_interpreter->input(n);
+
+            });
+            let repr: &Tensor = inp.into();
+            return repr;
         }
     }
 }

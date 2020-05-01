@@ -8,16 +8,16 @@ extern crate cpp;
 
 mod bindings;
 mod interop;
-mod interpreter;
-mod micro_error_reporter;
-mod micro_interpreter;
-mod micro_op_resolver;
+pub mod interpreter;
+pub mod micro_error_reporter;
+pub mod micro_interpreter;
+pub mod micro_op_resolver;
 
 pub mod model;
 
 use interpreter::Tensor;
-use micro_interpreter::MicroInterpreter;
 use micro_error_reporter::MicroErrorReporter;
+use micro_interpreter::MicroInterpreter;
 use micro_op_resolver::MicroOpResolver;
 
 pub fn do_it(model: &[u8; 18288], yes: &[u8; 1960], no: &[u8; 1960]) -> bool {
@@ -25,7 +25,7 @@ pub fn do_it(model: &[u8; 18288], yes: &[u8; 1960], no: &[u8; 1960]) -> bool {
 
     // Map the model into a usable data structure. This doesn't involve
     // any copying or parsing, it's a very lightweight operation.
-    let model = model::Model::from_buffer(&model[..]).unwrap();
+    let model = crate::model::Model::from_buffer(&model[..]).unwrap();
 
     // Create an area of memory to use for input, output, and
     // intermediate arrays.
@@ -37,14 +37,15 @@ pub fn do_it(model: &[u8; 18288], yes: &[u8; 1960], no: &[u8; 1960]) -> bool {
 
     // Build an interpreter to run the model with
     let error_reporter = MicroErrorReporter::new();
-    let rusty_interpreter = MicroInterpreter::new(&model,
-                                                  micro_op_resolver,
-                                                  &mut tensor_arena,
-                                                  TENSOR_ARENA_SIZE,
-                                                  &error_reporter);
+    let mut rusty_interpreter = MicroInterpreter::new(
+        &model,
+        micro_op_resolver,
+        &mut tensor_arena,
+        TENSOR_ARENA_SIZE,
+        &error_reporter,
+    );
 
     unsafe {
-
         cpp! {{
             #include "tensorflow/lite/micro/kernels/micro_ops.h"
             #include "tensorflow/lite/micro/micro_error_reporter.h"
@@ -68,57 +69,75 @@ pub fn do_it(model: &[u8; 18288], yes: &[u8; 1960], no: &[u8; 1960]) -> bool {
         let yes_features_data = yes.as_ptr();
         let no_features_data = no.as_ptr();
 
-        let result = cpp! ([rusty_interpreter as "tflite::MicroInterpreter",
-                            yes_features_data as "const uint8_t*",
-                            no_features_data as "const uint8_t*"] -> bool as "bool" {
+        // let input = cpp!([rusty_interpreter as "tflite::MicroInterpreter",
+        //     error_reporter as "tflite::MicroErrorReporter*"] -> *mut bindings::TfLiteTensor as "TfLiteTensor*" {
 
-            // Example from https://github.com/tensorflow/tensorflow/blob/master/tensorflow/lite/micro/examples/micro_speech/micro_speech_test.cc
+        // Example from https://github.com/tensorflow/tensorflow/blob/master/tensorflow/lite/micro/examples/micro_speech/micro_speech_test.cc
 
-            micro_test::tests_passed = 0;
-            micro_test::tests_failed = 0;
+        // micro_test::tests_passed = 0;
+        // micro_test::tests_failed = 0;
+
+        // tflite::MicroErrorReporter micro_error_reporter;
+        // micro_test::reporter = &micro_error_reporter;
+        // micro_test::reporter = error_reporter;
+
+        // // Check model version
+        // if (model->version() != TFLITE_SCHEMA_VERSION) {
+        //     TF_LITE_REPORT_ERROR(error_reporter,
+        //                          "Model provided is schema version %d not equal "
+        //                          "to supported version %d.\n",
+        //                          model->version(), TFLITE_SCHEMA_VERSION);
+        // }
+
+        // // Pull in only the operation implementations we need.
+        // // This relies on a complete list of all the ops needed by this graph.
+        // // An easier approach is to just use the AllOpsResolver, but this will
+        // // incur some penalty in code space for op implementations that are not
+        // // needed by this graph.
+        // //
+        // // tflite::ops::micro::AllOpsResolver resolver;
+        // tflite::MicroOpResolver<3> micro_op_resolver;
+        // micro_op_resolver.AddBuiltin(
+        //     tflite::BuiltinOperator_DEPTHWISE_CONV_2D,
+        //     tflite::ops::micro::Register_DEPTHWISE_CONV_2D());
+        // micro_op_resolver.AddBuiltin(tflite::BuiltinOperator_FULLY_CONNECTED,
+        //                              tflite::ops::micro::Register_FULLY_CONNECTED());
+        // micro_op_resolver.AddBuiltin(tflite::BuiltinOperator_SOFTMAX,
+        //                              tflite::ops::micro::Register_SOFTMAX());
+
+        // // Create an area of memory to use for input, output, and intermediate arrays.
+        // const int tensor_arena_size = 10 * 1024;
+        // uint8_t tensor_arena[tensor_arena_size];
+
+        // // Build an interpreter to run the model with.
+        // tflite::MicroInterpreter interpreter(model, micro_op_resolver, tensor_arena,
+        //                                      tensor_arena_size, error_reporter);
+        // interpreter.AllocateTensors();
+
+        // Get information about the memory area to use for the model's input.
+        // TfLiteTensor* input = rusty_interpreter.input(0);
+
+        // return input;
+        // });
+
+        let inp = rusty_interpreter.input(0);
+        let result = cpp!([rusty_interpreter as "tflite::MicroInterpreter",
+                inp as "const TfLiteTensor",
+                error_reporter as "tflite::MicroErrorReporter",
+                yes_features_data as "const uint8_t*",
+                no_features_data as "const uint8_t*"] -> bool as "bool" {
+            // tflite::MicroInterpreter interpreter = rusty_interpreter;
 
             // Set up logging.
-            tflite::MicroErrorReporter micro_error_reporter;
-            tflite::ErrorReporter* error_reporter = &micro_error_reporter;
-            micro_test::reporter = &micro_error_reporter;
-
-            // // Check model version
-            // if (model->version() != TFLITE_SCHEMA_VERSION) {
-            //     TF_LITE_REPORT_ERROR(error_reporter,
-            //                          "Model provided is schema version %d not equal "
-            //                          "to supported version %d.\n",
-            //                          model->version(), TFLITE_SCHEMA_VERSION);
-            // }
-
-            // // Pull in only the operation implementations we need.
-            // // This relies on a complete list of all the ops needed by this graph.
-            // // An easier approach is to just use the AllOpsResolver, but this will
-            // // incur some penalty in code space for op implementations that are not
-            // // needed by this graph.
-            // //
-            // // tflite::ops::micro::AllOpsResolver resolver;
-            // tflite::MicroOpResolver<3> micro_op_resolver;
-            // micro_op_resolver.AddBuiltin(
-            //     tflite::BuiltinOperator_DEPTHWISE_CONV_2D,
-            //     tflite::ops::micro::Register_DEPTHWISE_CONV_2D());
-            // micro_op_resolver.AddBuiltin(tflite::BuiltinOperator_FULLY_CONNECTED,
-            //                              tflite::ops::micro::Register_FULLY_CONNECTED());
-            // micro_op_resolver.AddBuiltin(tflite::BuiltinOperator_SOFTMAX,
-            //                              tflite::ops::micro::Register_SOFTMAX());
-
-            // // Create an area of memory to use for input, output, and intermediate arrays.
-            // const int tensor_arena_size = 10 * 1024;
-            // uint8_t tensor_arena[tensor_arena_size];
-
-            // // Build an interpreter to run the model with.
-            // tflite::MicroInterpreter interpreter(model, micro_op_resolver, tensor_arena,
-            //                                      tensor_arena_size, error_reporter);
-            // interpreter.AllocateTensors();
-
-            tflite::MicroInterpreter interpreter = rusty_interpreter;
+            tflite::MicroErrorReporter this_error_reporter = error_reporter;
+            tflite::ErrorReporter* norm_error_reporter = &this_error_reporter;
+            micro_test::tests_passed = 0;
+            micro_test::tests_failed = 0;
+            micro_test::reporter = norm_error_reporter;
 
             // Get information about the memory area to use for the model's input.
-            TfLiteTensor* input = interpreter.input(0);
+            // TfLiteTensor* input = interpreter.input(0);
+            TfLiteTensor* input = &inp;
 
             // Make sure the input has the properties we expect.
             TF_LITE_MICRO_EXPECT_NE(nullptr, input);
@@ -137,15 +156,15 @@ pub fn do_it(model: &[u8; 18288], yes: &[u8; 1960], no: &[u8; 1960]) -> bool {
             }
 
             // Run the model on this input and make sure it succeeds.
-            TfLiteStatus invoke_status = interpreter.Invoke();
+            TfLiteStatus invoke_status = rusty_interpreter.Invoke();
             if (invoke_status != kTfLiteOk) {
-                TF_LITE_REPORT_ERROR(error_reporter, "Invoke failed\n");
+                TF_LITE_REPORT_ERROR(norm_error_reporter, "Invoke failed\n");
             }
             TF_LITE_MICRO_EXPECT_EQ(kTfLiteOk, invoke_status);
 
             // Get the output from the model, and make sure it's the expected size and
             // type.
-            TfLiteTensor* output = interpreter.output(0);
+            TfLiteTensor* output = rusty_interpreter.output(0);
             TF_LITE_MICRO_EXPECT_EQ(2, output->dims->size);
             TF_LITE_MICRO_EXPECT_EQ(1, output->dims->data[0]);
             TF_LITE_MICRO_EXPECT_EQ(4, output->dims->data[1]);
@@ -173,15 +192,15 @@ pub fn do_it(model: &[u8; 18288], yes: &[u8; 1960], no: &[u8; 1960]) -> bool {
             }
 
             // Run the model on this "No" input.
-            invoke_status = interpreter.Invoke();
+            invoke_status = rusty_interpreter.Invoke();
             if (invoke_status != kTfLiteOk) {
-                TF_LITE_REPORT_ERROR(error_reporter, "Invoke failed\n");
+                TF_LITE_REPORT_ERROR(norm_error_reporter, "Invoke failed\n");
             }
             TF_LITE_MICRO_EXPECT_EQ(kTfLiteOk, invoke_status);
 
             // Get the output from the model, and make sure it's the expected size and
             // type.
-            output = interpreter.output(0);
+            output = rusty_interpreter.output(0);
             TF_LITE_MICRO_EXPECT_EQ(2, output->dims->size);
             TF_LITE_MICRO_EXPECT_EQ(1, output->dims->data[0]);
             TF_LITE_MICRO_EXPECT_EQ(4, output->dims->data[1]);
@@ -196,12 +215,12 @@ pub fn do_it(model: &[u8; 18288], yes: &[u8; 1960], no: &[u8; 1960]) -> bool {
             TF_LITE_MICRO_EXPECT_GT(no_score, unknown_score);
             TF_LITE_MICRO_EXPECT_GT(no_score, yes_score);
 
-            TF_LITE_REPORT_ERROR(error_reporter, "Ran successfully\n");
+            TF_LITE_REPORT_ERROR(norm_error_reporter, "Ran successfully\n");
 
             return micro_test::did_test_fail;
         });
 
         info!("Done LIB. Did_Test_Fail = {:?}", result);
-        result
+        return result;
     }
 }
