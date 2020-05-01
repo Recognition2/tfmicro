@@ -122,7 +122,7 @@ pub fn do_it(model: &[u8; 18288], yes: &[u8; 1960], no: &[u8; 1960]) -> bool {
 
         let inp = rusty_interpreter.input(0);
         let result = cpp!([rusty_interpreter as "tflite::MicroInterpreter",
-                inp as "const TfLiteTensor",
+                inp as "const TfLiteTensor*",
                 error_reporter as "tflite::MicroErrorReporter",
                 yes_features_data as "const uint8_t*",
                 no_features_data as "const uint8_t*"] -> bool as "bool" {
@@ -137,7 +137,7 @@ pub fn do_it(model: &[u8; 18288], yes: &[u8; 1960], no: &[u8; 1960]) -> bool {
 
             // Get information about the memory area to use for the model's input.
             // TfLiteTensor* input = interpreter.input(0);
-            TfLiteTensor* input = &inp;
+            TfLiteTensor* input = inp;
 
             // Make sure the input has the properties we expect.
             TF_LITE_MICRO_EXPECT_NE(nullptr, input);
