@@ -80,15 +80,42 @@ impl<'a> MicroInterpreter<'a> {
         }
     }
 
-    pub fn input(&self, n: usize) -> &'a Tensor {
-        let micro_interpreter = &self.micro_interpreter;
+    pub fn input(&self, n: usize) -> &'a mut Tensor {
+        let interpreter = &self.micro_interpreter;
         unsafe {
-            let inp = cpp!([micro_interpreter as "tflite::MicroInterpreter*",
-                n as "size_t"] -> *mut bindings::TfLiteTensor as "TfLiteTensor*" {
-
-                return micro_interpreter->input(n);
+            let inp = cpp!([
+                interpreter as "tflite::MicroInterpreter*",
+                n as "size_t"]
+                -> *mut bindings::TfLiteTensor as "TfLiteTensor*" {
+                return interpreter->input(n);
             });
+            assert!(!inp.is_null(), "Obtained nullptr from TensorFlow");
             inp.into()
+        }
+    }
+
+    pub fn output(&self, n: usize) -> &'a Tensor {
+        let interpreter = &self.micro_interpreter;
+        unsafe {
+            let out = cpp!([
+                interpreter as "tflite::MicroInterpreter*",
+                n as "size_t"]
+                -> *mut bindings::TfLiteTensor as "TfLiteTensor*"{
+                return interpreter->output(n);
+            });
+            assert!(!out.is_null(), "Obtained nullptr from Tensorflow");
+            out.into()
+        }
+    }
+
+    pub fn Invoke(&self) -> bindings::TfLiteStatus {
+        let interpreter = &self.micro_interpreter;
+        unsafe {
+            let status = cpp!([interpreter as "tflite::MicroInterpreter*"]
+                -> bindings::TfLiteStatus as "TfLiteStatus" {
+                return interpreter->Invoke();
+            });
+            status
         }
     }
 }
