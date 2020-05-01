@@ -84,13 +84,11 @@ impl<'a> MicroInterpreter<'a> {
         let micro_interpreter = &self.micro_interpreter;
         unsafe {
             let inp = cpp!([micro_interpreter as "tflite::MicroInterpreter*",
-                n as "uint64_t"] -> *mut bindings::TfLiteTensor as "TfLiteTensor*" {
+                n as "size_t"] -> *mut bindings::TfLiteTensor as "TfLiteTensor*" {
 
                 return micro_interpreter->input(n);
-
             });
-            let repr: &Tensor = inp.into();
-            return repr;
+            inp.into()
         }
     }
 }
