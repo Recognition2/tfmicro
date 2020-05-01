@@ -399,7 +399,7 @@ pub struct Tensor(bindings::TfLiteTensor);
 // Temporary I think
 impl From<*mut bindings::TfLiteTensor> for &Tensor {
     fn from(t: *mut bindings::TfLiteTensor) -> Self {
-        unsafe { &*(t as *mut Self) }
+        unsafe { &*(t as *mut Tensor) }
     }
 }
 
