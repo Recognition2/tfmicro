@@ -67,6 +67,8 @@ env_logger = "0.7.1"
 [features]
 build = []
 
+[profile.release]
+debug = true # symbols are nice
 
 
 [patch.crates-io]
