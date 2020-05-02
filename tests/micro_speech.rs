@@ -1,3 +1,5 @@
+//! micro_speech example
+
 use tfmicro::{
     bindings, micro_error_reporter::MicroErrorReporter,
     micro_interpreter::MicroInterpreter, micro_op_resolver::MicroOpResolver,
@@ -27,20 +29,20 @@ pub fn micro_speech() {
 
     // Build an interpreter to run the model with
     let error_reporter = MicroErrorReporter::new();
-    let mut interpreter = MicroInterpreter::new(
+    let interpreter = MicroInterpreter::new(
         &model,
         micro_op_resolver,
         &mut tensor_arena,
         TENSOR_ARENA_SIZE,
         &error_reporter,
     );
-    let mut inp = interpreter.input(0);
+    let input = interpreter.input(0);
 
     // Assert input properties
-    assert_eq!([1, 49, 40, 1], inp.tensor_info().dims);
-    assert_eq!(&bindings::TfLiteType::kTfLiteUInt8, inp.get_type());
+    assert_eq!([1, 49, 40, 1], input.tensor_info().dims);
+    assert_eq!(&bindings::TfLiteType::kTfLiteUInt8, input.get_type());
 
-    inp.tensor_data_mut().clone_from_slice(yes);
+    input.tensor_data_mut().clone_from_slice(yes);
 
     let status = interpreter.Invoke();
     assert_eq!(bindings::TfLiteStatus::kTfLiteOk, status, "Invoke failed!");
@@ -58,7 +60,7 @@ pub fn micro_speech() {
     assert!(yes_score > unknown_score);
     assert!(yes_score > no_score);
 
-    inp.tensor_data_mut().clone_from_slice(no);
+    input.tensor_data_mut().clone_from_slice(no);
 
     let status = interpreter.Invoke();
     assert_eq!(bindings::TfLiteStatus::kTfLiteOk, status);
