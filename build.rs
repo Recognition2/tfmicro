@@ -227,7 +227,7 @@ fn bindgen_cross_builder() -> Result<bindgen::Builder> {
         // Add a path to the system headers for the target
         // compiler. Possibly we end up using a gcc header with clang
         // frontend, which is sketchy.
-        let _path = cc::Build::new()
+        let search_paths = cc::Build::new()
             .cpp(true)
             .get_compiler()
             .to_command()
@@ -242,21 +242,26 @@ fn bindgen_cross_builder() -> Result<bindgen::Builder> {
                 // the c++ headers are. If we only needed the c headers we
                 // could use `--print-file-name=include` but that's not
                 // possible.
-                let console_output = String::from_utf8(output.stderr)?;
-                println!("From gcc invocation: {:?}", console_output);
-                // TODO scraping
-                Ok(console_output)
+                let gcc_out = String::from_utf8(output.stderr)?;
+
+                // Scrape the search paths
+                let search_start = gcc_out.find("search starts here").unwrap();
+                let search_paths: Vec<PathBuf> = gcc_out[search_start..]
+                    .split('\n')
+                    .map(|p| PathBuf::from(p.trim()))
+                    .filter(|path| path.exists())
+                    .collect();
+
+                Ok(search_paths)
             })?;
 
-        //println!("Found path {}", path.trim());
-
-        // TODO add scraped paths here
-        Ok(builder
-            .clang_arg("-I/usr/arm-none-eabi/include")
-            .clang_arg("-I/usr/lib/gcc/arm-none-eabi/7.3.1/include")
-            .clang_arg("-I/usr/arm-none-eabi/include/c++/7.3.1/")
-            .clang_arg("-I/usr/arm-none-eabi/include/c++/7.3.1/arm-none-eabi")
-            .detect_include_paths(false))
+        // Add scraped paths to builder
+        let mut builder = builder.detect_include_paths(false);
+        for path in search_paths {
+            builder =
+                builder.clang_arg(format!("-I{}", path.to_string_lossy()));
+        }
+        Ok(builder)
     } else {
         Ok(builder)
     }
