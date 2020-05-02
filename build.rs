@@ -117,6 +117,7 @@ trait CompilationBuilder {
             .flag("-fomit-frame-pointer")
             .flag("-fpermissive")
             .flag("-fno-use-cxa-atexit")
+            .flag("-fno-short-enums")
             .define("TF_LITE_STATIC_MEMORY", None)
             .define("TF_LITE_MCU_DEBUG_LOG", None)
             .define("GEMMLOWP_ALLOW_SLOW_SCALAR_FALLBACK", None)
