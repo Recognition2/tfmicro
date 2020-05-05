@@ -3,7 +3,7 @@
 # See https://petewarden.com/2020/02/28/converting-a-tensorflow-lite-cc-data-array-into-a-file-on-disk/
 
 import re
-
+import struct
 
 def convert_cc_to_tflite(name, path):
     output_data = bytearray()
@@ -18,6 +18,18 @@ def convert_cc_to_tflite(name, path):
     with open(f"examples/models/{name}", "wb") as output_file:
         output_file.write(output_data)
 
+def convert_cc_to_tflite_float(name, path):
+    output_data = bytearray()
+    with open(f"submodules/tensorflow/tensorflow/lite/micro/{path}", "r") as file:
+        for line in file:
+            values_match = re.match(r"\W*([0-9, ]+.[0-9, .-]+).*", line)
+            if values_match:
+                list_text = values_match.group(1)
+                values_text = filter(None, list_text.split(","))
+                values = [b for x in values_text if len(x.strip()) for b in struct.pack("!f", float(x))]
+                output_data.extend(values)
+    with open(f"examples/models/{name}", "wb") as output_file:
+        output_file.write(output_data)
 
 def convert_cc_to_tflite_decimal(name, path):
     output_data = bytearray()
@@ -40,11 +52,13 @@ convert_cc_to_tflite("hello_world.tflite", "examples/hello_world/sine_model_data
 convert_cc_to_tflite(
     "magic_wand.tflite", "examples/magic_wand/magic_wand_model_data.cc"
 )
-convert_cc_to_tflite(
-    "ring_micro_features.data", "examples/magic_wand/ring_micro_features_data.cc"
+convert_cc_to_tflite_float(
+    "ring_micro_f9643d42_nohash_4.data",
+    "examples/magic_wand/ring_micro_features_data.cc"
 )
-convert_cc_to_tflite(
-    "slope_micro_features.data", "examples/magic_wand/slope_micro_features_data.cc"
+convert_cc_to_tflite_float(
+    "slope_micro_f2e59fea_nohash_1.data",
+     "examples/magic_wand/slope_micro_features_data.cc"
 )
 
 # micro_speech
