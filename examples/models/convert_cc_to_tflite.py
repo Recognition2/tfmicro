@@ -36,8 +36,15 @@ def convert_cc_to_tflite_decimal(name, path):
 # hello_world
 convert_cc_to_tflite("hello_world.tflite", "examples/hello_world/sine_model_data.cc")
 
+# magic_wand
 convert_cc_to_tflite(
     "magic_wand.tflite", "examples/magic_wand/magic_wand_model_data.cc"
+)
+convert_cc_to_tflite(
+    "ring_micro_features.data", "examples/magic_wand/ring_micro_features_data.cc"
+)
+convert_cc_to_tflite(
+    "slope_micro_features.data", "examples/magic_wand/slope_micro_features_data.cc"
 )
 
 # micro_speech
