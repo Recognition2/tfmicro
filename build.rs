@@ -95,7 +95,10 @@ trait CompilationBuilder {
 
     /// Build flags for tensorflow micro sources
     fn tensorflow_build_setup(&mut self) -> &mut Self {
-        self.flag("-fno-rtti") // No Runtime type information
+        let target = env::var("TARGET").unwrap_or("".to_string());
+
+        let build = self
+            .flag("-fno-rtti") // No Runtime type information
             .flag("-fmessage-length=0")
             .flag("-fno-exceptions")
             .flag("-fno-unwind-tables")
@@ -119,11 +122,16 @@ trait CompilationBuilder {
             .flag("-fno-use-cxa-atexit")
             // use a full word for enums, this should match clang's behaviour
             .flag("-fno-short-enums")
-            // unaligned accesses are usually a poor idea on ARM cortex-m
-            .flag("-mno-unaligned-access")
             .define("TF_LITE_STATIC_MEMORY", None)
             .define("TF_LITE_MCU_DEBUG_LOG", None)
-            .define("GEMMLOWP_ALLOW_SLOW_SCALAR_FALLBACK", None)
+            .define("GEMMLOWP_ALLOW_SLOW_SCALAR_FALLBACK", None);
+
+        if target.starts_with("thumb") {
+            // unaligned accesses are usually a poor idea on ARM cortex-m
+            build.flag("-mno-unaligned-access")
+        } else {
+            build
+        }
     }
 }
 impl CompilationBuilder for cpp_build::Config {
