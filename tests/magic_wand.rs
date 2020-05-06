@@ -11,9 +11,16 @@ use tfmicro::{
 fn magic_wand() {
     let model = include_bytes!("../examples/models/magic_wand.tflite");
     let ring =
-        include_bytes!("../examples/models/ring_micro_f9643d42_nohash_4.data");
-    let slope =
-        include_bytes!("../examples/models/slope_micro_f2e59fea_nohash_1.data");
+        &include_bytes!("../examples/models/ring_micro_f9643d42_nohash_4.data")
+            .chunks_exact(4)
+            .map(|c| f32::from_be_bytes([c[0], c[1], c[2], c[3]]))
+            .collect_vec();
+    let slope = &include_bytes!(
+        "../examples/models/slope_micro_f2e59fea_nohash_1.data"
+    )
+    .chunks_exact(4)
+    .map(|c| f32::from_be_bytes([c[0], c[1], c[2], c[3]]))
+    .collect_vec();
 
     // Instantiate the model from the file
     let model = Model::from_buffer(&model[..]).unwrap();
@@ -70,9 +77,9 @@ fn magic_wand() {
     // NegativeScore
     assert_eq!(
         output
-            .tensor_data::<u8>()
+            .tensor_data::<f32>()
             .into_iter()
-            .position_max()
+            .position_max_by(|&a, &b| a.partial_cmp(b).unwrap())
             .unwrap(),
         1,
         "Ring is not the maximum score!"
@@ -88,9 +95,9 @@ fn magic_wand() {
 
     assert_eq!(
         output
-            .tensor_data::<u8>()
+            .tensor_data::<f32>()
             .into_iter()
-            .position_max()
+            .position_max_by(|&a, &b| a.partial_cmp(b).unwrap())
             .unwrap(),
         2,
         "Slope is not the maximum score!"
