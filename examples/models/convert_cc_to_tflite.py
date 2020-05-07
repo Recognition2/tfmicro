@@ -22,7 +22,7 @@ def convert_cc_to_tflite_float(name, path):
     output_data = bytearray()
     with open(f"submodules/tensorflow/tensorflow/lite/micro/{path}", "r") as file:
         for line in file:
-            values_match = re.match(r"\W*([0-9, ]+.[0-9, .-]+).*", line)
+            values_match = re.match(r"\W*([0-9,-. ]+).*", line)
             if values_match:
                 list_text = values_match.group(1)
                 values_text = filter(None, list_text.split(","))
