@@ -7,7 +7,7 @@ use tfmicro::{
 };
 
 #[test]
-pub fn micro_speech() {
+fn micro_speech() {
     println!("Starting test micro_speech_rust");
     let model = include_bytes!("../examples/models/micro_speech.tflite");
     let no =
