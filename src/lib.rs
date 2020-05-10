@@ -42,7 +42,7 @@
 //! [Cargo]: https://doc.rust-lang.org/stable/cargo/
 //! [CC crate]: https://crates.io/crates/cc
 //! [c_examples]: https://github.com/tensorflow/tensorflow/tree/master/tensorflow/lite/micro/examples
-#![no_std]
+#![cfg_attr(not(feature = "std"), no_std)]
 
 #[macro_use]
 extern crate log;

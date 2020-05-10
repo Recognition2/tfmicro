@@ -5,6 +5,7 @@ use core::marker::PhantomData;
 use crate::micro_error_reporter::MicroErrorReporter;
 use crate::micro_op_resolver::MicroOpResolver;
 use crate::{model::Model, tensor::Tensor, Status};
+use managed::ManagedSlice;
 
 use crate::bindings;
 use crate::bindings::tflite;
@@ -44,14 +45,23 @@ impl<'a> MicroInterpreter<'a> {
     // doesn't do any deallocation of any of the pointed-to objects,
     // ownership remains with the caller."
 
-    pub fn new<'m: 'a, 't: 'a>(
+    /// Create a new micro_interpreter from a Model, a MicroOpResolver and
+    /// a tensor arena (scratchpad).
+    ///
+    pub fn new<'m: 'a, 't: 'a, TArena>(
         model: &'m Model,
         resolver: MicroOpResolver,
-        tensor_arena: &'t mut [u8],
-        tensor_arena_size: usize,
-    ) -> Self {
-        let tensor_arena = tensor_arena.as_ptr();
+        tensor_arena: TArena,
+    ) -> Self
+    where
+        TArena: Into<ManagedSlice<'t, u8>>,
+    {
+        let mut tensor_arena = tensor_arena.into();
+
+        let tensor_arena_size = tensor_arena.len();
+        let tensor_arena = tensor_arena.as_mut_ptr();
         let micro_error_reporter = MicroErrorReporter::new();
+        let micro_error_reporter_ref = &micro_error_reporter;
 
         // Create interpreter
         let micro_interpreter = unsafe {
@@ -60,10 +70,10 @@ impl<'a> MicroInterpreter<'a> {
                 resolver as "tflite::MicroMutableOpResolver",
                 tensor_arena as "uint8_t*",
                 tensor_arena_size as "size_t",
-                micro_error_reporter as "tflite::MicroErrorReporter*"
+                micro_error_reporter_ref as "tflite::MicroErrorReporter*"
             ] -> tflite::MicroInterpreter as "tflite::MicroInterpreter"
               {
-                  tflite::ErrorReporter* error_reporter = micro_error_reporter;
+                  tflite::ErrorReporter* error_reporter = micro_error_reporter_ref;
                   // Build an interpreter to run the model with.
                   tflite::MicroInterpreter interpreter(model,
                                                        resolver,
@@ -113,7 +123,7 @@ impl<'a> MicroInterpreter<'a> {
 
         let status = unsafe {
             cpp!([interpreter as "tflite::MicroInterpreter*"]
-                -> bindings::TfLiteStatus as "TfLiteStatus" {
+                  -> bindings::TfLiteStatus as "TfLiteStatus" {
                 return interpreter->Invoke();
             })
         };
@@ -134,7 +144,7 @@ impl<'a> MicroInterpreter<'a> {
             let out = cpp!([
                 interpreter as "tflite::MicroInterpreter*",
                 n as "size_t"]
-                -> *mut bindings::TfLiteTensor as "TfLiteTensor*"{
+                    -> *mut bindings::TfLiteTensor as "TfLiteTensor*" {
                 return interpreter->output(n);
             });
 
@@ -144,5 +154,64 @@ impl<'a> MicroInterpreter<'a> {
             // From bindgen type to Rust type
             out.into()
         }
+    }
+
+    /// Returns the actual number of bytes required for the arena
+    ///
+    pub fn arena_used_bytes(&self) -> usize {
+        let interpreter = &self.micro_interpreter;
+        unsafe {
+            cpp!([interpreter as "tflite::MicroInterpreter*"]
+                  -> usize as "size_t" {
+                return interpreter->arena_used_bytes();
+            })
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn new_interpreter_static_arena() {
+        // model
+        let model = include_bytes!("../examples/models/hello_world.tflite");
+        let model = Model::from_buffer(&model[..]).unwrap();
+
+        // resolver
+        let all_op_resolver = MicroOpResolver::new_with_all_ops();
+
+        // arena
+        const TENSOR_ARENA_SIZE: usize = 4 * 1024;
+        let mut tensor_arena: [u8; TENSOR_ARENA_SIZE] = [0; TENSOR_ARENA_SIZE];
+
+        let _ = MicroInterpreter::new(
+            &model,
+            all_op_resolver,
+            &mut tensor_arena[..],
+        );
+    }
+
+    #[cfg(feature = "alloc")]
+    extern crate alloc;
+
+    #[cfg(feature = "alloc")]
+    use alloc::{vec, vec::Vec};
+
+    #[test]
+    #[cfg(any(feature = "std", feature = "alloc"))]
+    fn new_interpreter_alloc_arena() {
+        // model
+        let model = include_bytes!("../examples/models/hello_world.tflite");
+        let model = Model::from_buffer(&model[..]).unwrap();
+
+        // resolver
+        let all_op_resolver = MicroOpResolver::new_with_all_ops();
+
+        // arena
+        let tensor_arena: Vec<u8> = vec![0u8; 4 * 1024];
+
+        let _ = MicroInterpreter::new(&model, all_op_resolver, tensor_arena);
     }
 }

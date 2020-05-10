@@ -31,12 +31,8 @@ fn micro_speech() {
     let micro_op_resolver = MicroOpResolver::new_for_microspeech();
 
     // Build an interpreter to run the model with
-    let mut interpreter = MicroInterpreter::new(
-        &model,
-        micro_op_resolver,
-        &mut tensor_arena,
-        TENSOR_ARENA_SIZE,
-    );
+    let mut interpreter =
+        MicroInterpreter::new(&model, micro_op_resolver, &mut tensor_arena[..]);
 
     // Check properties of the input sensor
     let input = interpreter.input(0);
