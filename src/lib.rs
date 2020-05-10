@@ -24,7 +24,6 @@
 //! [TensorFlow Micro]: https://github.com/tensorflow/tensorflow/tree/master/tensorflow/lite/micro
 //! [Cargo]: https://doc.rust-lang.org/stable/cargo/
 //! [CC crate]: https://crates.io/crates/cc
-#![recursion_limit = "8192"]
 #![no_std]
 
 #[macro_use]
