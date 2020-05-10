@@ -6,9 +6,13 @@ use tfmicro::{
     model::Model,
 };
 
+use log::info;
+
 #[test]
 fn micro_speech() {
-    println!("Starting test micro_speech_rust");
+    env_logger::init();
+    info!("---- Starting tensorflow micro example: micro_speech");
+
     let model = include_bytes!("../examples/models/micro_speech.tflite");
     let no =
         include_bytes!("../examples/models/no_micro_f9643d42_nohash_4.data");
@@ -77,4 +81,6 @@ fn micro_speech() {
     assert!(no_score > silence_score);
     assert!(no_score > unknown_score);
     assert!(no_score > yes_score);
+
+    info!("---- Done");
 }

@@ -7,8 +7,13 @@ use tfmicro::{
     model::Model,
 };
 
+use log::info;
+
 #[test]
 fn magic_wand() {
+    env_logger::init();
+    info!("---- Starting tensorflow micro example: magic_wand");
+
     let model = include_bytes!("../examples/models/magic_wand.tflite");
     let ring =
         &include_bytes!("../examples/models/ring_micro_f9643d42_nohash_4.data")
@@ -90,4 +95,6 @@ fn magic_wand() {
             output_max_idx
         );
     }
+
+    info!("---- Done");
 }
