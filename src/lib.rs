@@ -52,6 +52,12 @@ extern crate cpp;
 mod bindings;
 mod interop;
 
+/// Error type for tfmicro
+#[derive(Clone, Copy, PartialEq, Debug)]
+pub enum Error {
+    InvalidModel,
+}
+
 /// The status resulting from a TensorFlow operation
 #[derive(Clone, Copy, PartialEq, Debug)]
 pub enum Status {
