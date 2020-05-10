@@ -1,7 +1,7 @@
 //! micro_speech example
 
 use tfmicro::{
-    bindings, micro_error_reporter::MicroErrorReporter,
+    micro_error_reporter::MicroErrorReporter,
     micro_interpreter::MicroInterpreter, micro_op_resolver::MicroOpResolver,
     model::Model,
 };
@@ -33,27 +33,27 @@ fn micro_speech() {
 
     // Build an interpreter to run the model with
     let error_reporter = MicroErrorReporter::new();
-    let interpreter = MicroInterpreter::new(
+    let mut interpreter = MicroInterpreter::new(
         &model,
         micro_op_resolver,
         &mut tensor_arena,
         TENSOR_ARENA_SIZE,
         &error_reporter,
     );
-    let input = interpreter.input(0);
 
-    // Assert input properties
+    // Check properties of the input sensor
+    let input = interpreter.input(0);
     assert_eq!([1, 49, 40, 1], input.tensor_info().dims);
-    assert_eq!(&bindings::TfLiteType::kTfLiteUInt8, input.get_type());
+
+    // -------- 'yes' example --------
 
     input.tensor_data_mut().clone_from_slice(yes);
 
-    let status = interpreter.Invoke();
-    assert_eq!(bindings::TfLiteStatus::kTfLiteOk, status, "Invoke failed!");
+    interpreter.invoke().unwrap();
 
+    // Get output for 'yes'
     let output = interpreter.output(0);
     assert_eq!([1, 4], output.tensor_info().dims);
-    assert_eq!(&bindings::TfLiteType::kTfLiteUInt8, output.get_type());
 
     let silence_score: u8 = output.tensor_data()[0];
     let unknown_score: u8 = output.tensor_data()[1];
@@ -64,14 +64,15 @@ fn micro_speech() {
     assert!(yes_score > unknown_score);
     assert!(yes_score > no_score);
 
+    // -------- 'no' example --------
+
     input.tensor_data_mut().clone_from_slice(no);
 
-    let status = interpreter.Invoke();
-    assert_eq!(bindings::TfLiteStatus::kTfLiteOk, status);
+    interpreter.invoke().unwrap();
 
+    // Get output for 'no'
     let output = interpreter.output(0);
     assert_eq!([1, 4], output.tensor_info().dims);
-    assert_eq!(&bindings::TfLiteType::kTfLiteUInt8, output.get_type());
 
     let silence_score: u8 = output.tensor_data()[0];
     let unknown_score: u8 = output.tensor_data()[1];

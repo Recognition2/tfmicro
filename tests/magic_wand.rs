@@ -2,7 +2,7 @@ extern crate itertools;
 use itertools::Itertools;
 
 use tfmicro::{
-    bindings, micro_error_reporter::MicroErrorReporter,
+    micro_error_reporter::MicroErrorReporter,
     micro_interpreter::MicroInterpreter, micro_op_resolver::MicroOpResolver,
     model::Model,
 };
@@ -36,7 +36,7 @@ fn magic_wand() {
     let micro_op_resolver = MicroOpResolver::new_for_magic_wand();
 
     let error_reporter = MicroErrorReporter::new();
-    let interpreter = MicroInterpreter::new(
+    let mut interpreter = MicroInterpreter::new(
         &model,
         micro_op_resolver,
         &mut tensor_arena,
@@ -50,34 +50,24 @@ fn magic_wand() {
     // SlopeScore
     // NegativeScore
     for &(input_data, output_max_idx) in [(ring, 1), (slope, 2)].iter().rev() {
+        // Set input tensor
         let input = interpreter.input(0);
         assert_eq!(
             [1, 128, 3, 1],
             input.tensor_info().dims,
-            "Dimensions of input tensor"
+            "Invalid input tensor dimensions"
         );
-        assert_eq!(
-            &bindings::TfLiteType::kTfLiteFloat32,
-            input.get_type(),
-            "Input tensor datatype"
-        );
-
         input.tensor_data_mut().clone_from_slice(input_data);
 
-        let status = interpreter.Invoke();
-        assert_eq!(bindings::TfLiteStatus::kTfLiteOk, status, "Invoke failed!");
+        // Run TensorFlow operation
+        interpreter.invoke().unwrap();
 
+        // Get output tensor
         let output = interpreter.output(0);
         assert_eq!(
             [1, 4],
             output.tensor_info().dims,
-            "Dimensions of output tensor"
-        );
-
-        assert_eq!(
-            &bindings::TfLiteType::kTfLiteFloat32,
-            output.get_type(),
-            "Output tensor datatype"
+            "Invalid output tensor dimensions"
         );
 
         // Four indices:

@@ -4,7 +4,7 @@ use core::marker::PhantomData;
 
 use crate::micro_error_reporter::MicroErrorReporter;
 use crate::micro_op_resolver::MicroOpResolver;
-use crate::{model::Model, tensor::Tensor};
+use crate::{model::Model, tensor::Tensor, Status};
 
 use crate::bindings;
 use crate::bindings::tflite;
@@ -102,14 +102,20 @@ impl<'a> MicroInterpreter<'a> {
 
     /// Invoke runs the Tensorflow operation to transform inputs to outputs
     ///
-    pub fn invoke(&mut self) -> bindings::TfLiteStatus {
+    pub fn invoke(&mut self) -> Result<(), Status> {
         let interpreter = &self.micro_interpreter;
-        unsafe {
-            let status = cpp!([interpreter as "tflite::MicroInterpreter*"]
+
+        let status = unsafe {
+            cpp!([interpreter as "tflite::MicroInterpreter*"]
                 -> bindings::TfLiteStatus as "TfLiteStatus" {
                 return interpreter->Invoke();
-            });
-            status
+            })
+        };
+
+        // Return result
+        match status.into() {
+            Status::Ok => Ok(()),
+            e => Err(e),
         }
     }
 

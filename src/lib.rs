@@ -52,6 +52,25 @@ extern crate cpp;
 mod bindings;
 mod interop;
 
+/// The status resulting from a TensorFlow operation
+#[derive(Clone, Copy, PartialEq, Debug)]
+pub enum Status {
+    Ok,
+    Error,
+    DelegateError,
+}
+impl From<bindings::TfLiteStatus> for Status {
+    fn from(status: bindings::TfLiteStatus) -> Self {
+        use Status::*;
+
+        match status {
+            bindings::TfLiteStatus::kTfLiteOk => Ok,
+            bindings::TfLiteStatus::kTfLiteError => Error,
+            bindings::TfLiteStatus::kTfLiteDelegateError => DelegateError,
+        }
+    }
+}
+
 pub mod micro_error_reporter;
 pub mod micro_interpreter;
 pub mod micro_op_resolver;

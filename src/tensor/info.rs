@@ -1,33 +1,11 @@
 //! Extract information about a Tensor into a TensorInfo
 
+use core::convert::TryInto;
 use core::fmt;
 
 use crate::bindings;
 
-pub type ElementType = bindings::TfLiteType;
-pub type QuantizationParams = bindings::TfLiteQuantizationParams;
-
-pub trait ElemTypeOf {
-    fn elem_type_of() -> ElementType;
-}
-
-impl ElemTypeOf for f32 {
-    fn elem_type_of() -> ElementType {
-        bindings::TfLiteType::kTfLiteFloat32
-    }
-}
-
-impl ElemTypeOf for u8 {
-    fn elem_type_of() -> ElementType {
-        bindings::TfLiteType::kTfLiteUInt8
-    }
-}
-
-impl ElemTypeOf for i32 {
-    fn elem_type_of() -> ElementType {
-        bindings::TfLiteType::kTfLiteInt32
-    }
-}
+use super::ElementType;
 
 pub struct TensorInfo<'a> {
     //pub name: &'a str,
@@ -48,7 +26,7 @@ impl fmt::Debug for TensorInfo<'_> {
 impl<'a> From<&'a bindings::TfLiteTensor> for TensorInfo<'a> {
     fn from(t: &'a bindings::TfLiteTensor) -> Self {
         Self {
-            element_type: t.type_,
+            element_type: t.type_.try_into().unwrap(),
             dims: {
                 let slice = unsafe {
                     let dims = &*t.dims;
