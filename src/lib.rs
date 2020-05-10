@@ -71,12 +71,12 @@ impl From<bindings::TfLiteStatus> for Status {
     }
 }
 
-pub mod micro_error_reporter;
+mod micro_error_reporter;
+
 pub mod micro_interpreter;
 pub mod micro_op_resolver;
 pub mod model;
 pub mod tensor;
 
-pub use micro_error_reporter::MicroErrorReporter;
 pub use micro_interpreter::MicroInterpreter;
 pub use micro_op_resolver::MicroOpResolver;

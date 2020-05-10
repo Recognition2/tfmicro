@@ -1,7 +1,6 @@
 //! micro_speech example
 
 use tfmicro::{
-    micro_error_reporter::MicroErrorReporter,
     micro_interpreter::MicroInterpreter, micro_op_resolver::MicroOpResolver,
     model::Model,
 };
@@ -32,13 +31,11 @@ fn micro_speech() {
     let micro_op_resolver = MicroOpResolver::new_for_microspeech();
 
     // Build an interpreter to run the model with
-    let error_reporter = MicroErrorReporter::new();
     let mut interpreter = MicroInterpreter::new(
         &model,
         micro_op_resolver,
         &mut tensor_arena,
         TENSOR_ARENA_SIZE,
-        &error_reporter,
     );
 
     // Check properties of the input sensor

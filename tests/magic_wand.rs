@@ -2,7 +2,6 @@ extern crate itertools;
 use itertools::Itertools;
 
 use tfmicro::{
-    micro_error_reporter::MicroErrorReporter,
     micro_interpreter::MicroInterpreter, micro_op_resolver::MicroOpResolver,
     model::Model,
 };
@@ -35,13 +34,11 @@ fn magic_wand() {
 
     let micro_op_resolver = MicroOpResolver::new_for_magic_wand();
 
-    let error_reporter = MicroErrorReporter::new();
     let mut interpreter = MicroInterpreter::new(
         &model,
         micro_op_resolver,
         &mut tensor_arena,
         TENSOR_ARENA_SIZE,
-        &error_reporter,
     );
 
     // Four indices:

@@ -20,7 +20,12 @@ cpp! {{
 }}
 
 pub struct MicroInterpreter<'a> {
+    // bindgen types
     micro_interpreter: tflite::MicroInterpreter,
+
+    // owned objects
+    #[allow(unused)]
+    micro_error_reporter: MicroErrorReporter,
 
     // See https://doc.rust-lang.org/std/marker/struct.PhantomData.html#unused-lifetime-parameters
     _phantom: PhantomData<&'a ()>,
@@ -39,14 +44,14 @@ impl<'a> MicroInterpreter<'a> {
     // doesn't do any deallocation of any of the pointed-to objects,
     // ownership remains with the caller."
 
-    pub fn new<'m: 'a, 't: 'a, 'e: 'a>(
+    pub fn new<'m: 'a, 't: 'a>(
         model: &'m Model,
         resolver: MicroOpResolver,
         tensor_arena: &'t mut [u8],
         tensor_arena_size: usize,
-        micro_error_reporter: &'e MicroErrorReporter,
     ) -> Self {
         let tensor_arena = tensor_arena.as_ptr();
+        let micro_error_reporter = MicroErrorReporter::new();
 
         // Create interpreter
         let micro_interpreter = unsafe {
@@ -75,6 +80,7 @@ impl<'a> MicroInterpreter<'a> {
         // Create self
         Self {
             micro_interpreter,
+            micro_error_reporter,
             _phantom: PhantomData,
         }
     }
