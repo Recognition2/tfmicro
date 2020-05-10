@@ -1,9 +1,9 @@
 //! Micro Error Reporter
 //!
 //! MicroErrorReporter extends the ErrorReporter base class, with a single
-//! virtual function `Report` (runtime polymorphism). This function actuall
-//! just does some snprintf, and then calls back to the static function
-//! `DebugLog` which we implement in interop.rs
+//! virtual function `Report` (runtime polymorphism). This function
+//! actually just does some snprintf, and then calls back to the static
+//! function `DebugLog` which we implement in interop.rs
 
 use crate::bindings::tflite;
 
