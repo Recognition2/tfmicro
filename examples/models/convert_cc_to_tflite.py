@@ -46,7 +46,7 @@ def convert_cc_to_tflite_decimal(name, path):
 
 
 # hello_world
-# convert_cc_to_tflite("hello_world.tflite", "examples/hello_world/sine_model_data.cc")
+convert_cc_to_tflite("hello_world.tflite", "examples/hello_world/model.cc")
 
 # magic_wand
 convert_cc_to_tflite(
