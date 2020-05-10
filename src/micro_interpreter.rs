@@ -2,10 +2,9 @@
 
 use core::marker::PhantomData;
 
-use crate::interpreter::Tensor;
 use crate::micro_error_reporter::MicroErrorReporter;
 use crate::micro_op_resolver::MicroOpResolver;
-use crate::model::Model;
+use crate::{model::Model, tensor::Tensor};
 
 use crate::bindings;
 use crate::bindings::tflite;
@@ -80,35 +79,30 @@ impl<'a> MicroInterpreter<'a> {
         }
     }
 
-    pub fn input(&self, n: usize) -> &'a mut Tensor {
+    /// Returns a mutable reference to the nth input tensor
+    ///
+    pub fn input(&mut self, n: usize) -> &'a mut Tensor {
         let interpreter = &self.micro_interpreter;
         unsafe {
+            // Call method on micro_interpreter
             let inp = cpp!([
                 interpreter as "tflite::MicroInterpreter*",
                 n as "size_t"]
                 -> *mut bindings::TfLiteTensor as "TfLiteTensor*" {
                 return interpreter->input(n);
             });
+
+            // Check result
             assert!(!inp.is_null(), "Obtained nullptr from TensorFlow");
+
+            // From bindgen type to Rust type
             inp.into()
         }
     }
 
-    pub fn output(&self, n: usize) -> &'a Tensor {
-        let interpreter = &self.micro_interpreter;
-        unsafe {
-            let out = cpp!([
-                interpreter as "tflite::MicroInterpreter*",
-                n as "size_t"]
-                -> *mut bindings::TfLiteTensor as "TfLiteTensor*"{
-                return interpreter->output(n);
-            });
-            assert!(!out.is_null(), "Obtained nullptr from Tensorflow");
-            out.into()
-        }
-    }
-
-    pub fn Invoke(&self) -> bindings::TfLiteStatus {
+    /// Invoke runs the Tensorflow operation to transform inputs to outputs
+    ///
+    pub fn invoke(&mut self) -> bindings::TfLiteStatus {
         let interpreter = &self.micro_interpreter;
         unsafe {
             let status = cpp!([interpreter as "tflite::MicroInterpreter*"]
@@ -116,6 +110,27 @@ impl<'a> MicroInterpreter<'a> {
                 return interpreter->Invoke();
             });
             status
+        }
+    }
+
+    /// Returns an immutable reference to the nth output tensor
+    ///
+    pub fn output(&self, n: usize) -> &'a Tensor {
+        let interpreter = &self.micro_interpreter;
+        unsafe {
+            // Call method on micro_interpreter
+            let out = cpp!([
+                interpreter as "tflite::MicroInterpreter*",
+                n as "size_t"]
+                -> *mut bindings::TfLiteTensor as "TfLiteTensor*"{
+                return interpreter->output(n);
+            });
+
+            // Check result
+            assert!(!out.is_null(), "Obtained nullptr from Tensorflow!");
+
+            // From bindgen type to Rust type
+            out.into()
         }
     }
 }
