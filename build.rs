@@ -107,7 +107,7 @@ trait CompilationBuilder {
             .flag("-fdata-sections")
             .flag("-funsigned-char")
             .flag("-MMD")
-            .flag("-std=gnu++11")
+            .flag("-std=c++11")
             .flag("-Wvla")
             .flag("-Wall")
             .flag("-Wextra")
