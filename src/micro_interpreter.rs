@@ -1,4 +1,61 @@
 //! Micro interpreter
+//!
+//! # Usage
+//!
+//! ```rust
+//! # use tfmicro::{
+//! #     micro_interpreter::MicroInterpreter, micro_op_resolver::MicroOpResolver,
+//! #     model::Model,
+//! # };
+//! // model
+//! let model = include_bytes!("../examples/models/hello_world.tflite");
+//! let model = Model::from_buffer(&model[..]).unwrap();
+//!
+//! // resolver
+//! let all_op_resolver = MicroOpResolver::new_with_all_ops();
+//!
+//! // arena
+//! const TENSOR_ARENA_SIZE: usize = 4 * 1024;
+//! let mut tensor_arena: [u8; TENSOR_ARENA_SIZE] = [0; TENSOR_ARENA_SIZE];
+//!
+//! let _ = MicroInterpreter::new(
+//!     &model,
+//!     all_op_resolver,
+//!     &mut tensor_arena[..],
+//! );
+//! ```
+//!
+//! Remember that once once you have instantiated the `MicroInterpreter`,
+//! the references you provided for `model`, `tensor_arena` must remain in
+//! scope. This is because the underlying C++ microinterpreter
+//! contains pointers to these objects.
+//!
+//! For example, the following will not compile:
+//!
+//! ```compile_fail
+//! # use tfmicro::{
+//! #     micro_interpreter::MicroInterpreter, micro_op_resolver::MicroOpResolver,
+//! #     model::Model,
+//! # };
+//! let mut interpreter = {
+//!     let model = include_bytes!("../examples/models/hello_world.tflite");
+//!     let model = Model::from_buffer(&model[..]).unwrap();
+//!
+//!     // ...
+//! # let all_op_resolver = MicroOpResolver::new_with_all_ops();
+//! # const TENSOR_ARENA_SIZE: usize = 4 * 1024;
+//! # let mut tensor_arena: [u8; TENSOR_ARENA_SIZE] = [0; TENSOR_ARENA_SIZE];
+//!
+//!     MicroInterpreter::new(
+//!         &model,
+//!         all_op_resolver,
+//!         &mut tensor_arena[..],
+//!     )
+//! }; // Error [model, ..] dropped here whilst still borrowed
+//!
+//! // interpreter used here
+//! # interpreter.input(0);
+//! ```
 
 use core::marker::PhantomData;
 use core::mem::MaybeUninit;
