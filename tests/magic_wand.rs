@@ -2,13 +2,17 @@ extern crate itertools;
 use itertools::Itertools;
 
 use tfmicro::{
-    bindings, micro_error_reporter::MicroErrorReporter,
     micro_interpreter::MicroInterpreter, micro_op_resolver::MicroOpResolver,
     model::Model,
 };
 
+use log::info;
+
 #[test]
 fn magic_wand() {
+    env_logger::init();
+    info!("---- Starting tensorflow micro example: magic_wand");
+
     let model = include_bytes!("../examples/models/magic_wand.tflite");
     let ring =
         &include_bytes!("../examples/models/ring_micro_f9643d42_nohash_4.data")
@@ -30,14 +34,8 @@ fn magic_wand() {
 
     let micro_op_resolver = MicroOpResolver::new_for_magic_wand();
 
-    let error_reporter = MicroErrorReporter::new();
-    let interpreter = MicroInterpreter::new(
-        &model,
-        micro_op_resolver,
-        &mut tensor_arena,
-        TENSOR_ARENA_SIZE,
-        &error_reporter,
-    );
+    let mut interpreter =
+        MicroInterpreter::new(&model, micro_op_resolver, &mut tensor_arena[..]);
 
     // Four indices:
     // WingScore
@@ -47,6 +45,7 @@ fn magic_wand() {
     test_gesture(&interpreter, slope, 2);
     test_gesture(&interpreter, ring, 1);
 }
+
 fn test_gesture(
     interpreter: &MicroInterpreter,
     data: &Vec<f32>,
