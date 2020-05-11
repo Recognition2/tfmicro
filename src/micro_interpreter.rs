@@ -118,6 +118,7 @@ impl<'a> MicroInterpreter<'a> {
         let tensor_arena_size = tensor_arena.len();
         let tensor_arena = tensor_arena.as_mut_ptr();
 
+        // Idempotent block to get a pointer to a MicroErrorReporter
         let micro_error_reporter_ref = unsafe {
             // Initialise MicroErrorReporter. We assume that `new` is a pure
             // function that only fills in the MicroErrorReporter vtable

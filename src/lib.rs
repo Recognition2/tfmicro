@@ -18,7 +18,7 @@
 //!
 //! ```text
 //! [dependencies]
-//! tfmicro = `0.1.0`
+//! tfmicro = 0.1.0
 //! ```
 //!
 //! To understand how the [TensorFlow Micro C examples][c_examples] map to
