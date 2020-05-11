@@ -79,6 +79,9 @@ impl From<bindings::TfLiteStatus> for Status {
 
 mod micro_error_reporter;
 
+#[macro_use]
+mod ops_builtin;
+
 pub mod micro_interpreter;
 pub mod micro_op_resolver;
 pub mod model;

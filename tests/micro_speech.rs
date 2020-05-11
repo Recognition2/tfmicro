@@ -2,7 +2,7 @@
 
 use tfmicro::{
     micro_interpreter::MicroInterpreter, micro_op_resolver::MicroOpResolver,
-    model::Model,
+    micro_op_resolver::Operators, model::Model,
 };
 
 use log::info;
@@ -28,7 +28,12 @@ fn micro_speech() {
     let mut tensor_arena: [u8; TENSOR_ARENA_SIZE] = [0; TENSOR_ARENA_SIZE];
 
     // Pull in all needed operation implementations
-    let micro_op_resolver = MicroOpResolver::new_for_microspeech();
+    let operators = [
+        Operators::DepthwiseConv2d,
+        Operators::FullyConnected,
+        Operators::Softmax,
+    ];
+    let micro_op_resolver = MicroOpResolver::new(&operators);
 
     // Build an interpreter to run the model with
     let mut interpreter =
