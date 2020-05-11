@@ -78,5 +78,7 @@ fn micro_speech() {
     assert!(no_score > unknown_score);
     assert!(no_score > yes_score);
 
+    interpreter.arena_used_bytes();
+
     info!("---- Done");
 }

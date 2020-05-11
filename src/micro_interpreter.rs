@@ -1,6 +1,7 @@
 //! Micro interpreter
 
 use core::marker::PhantomData;
+use core::mem::MaybeUninit;
 
 use crate::micro_error_reporter::MicroErrorReporter;
 use crate::micro_op_resolver::MicroOpResolver;
@@ -20,13 +21,12 @@ cpp! {{
     #include "tensorflow/lite/version.h"
 }}
 
+static mut ERROR_REPORTER: MaybeUninit<MicroErrorReporter> =
+    MaybeUninit::uninit();
+
 pub struct MicroInterpreter<'a> {
     // bindgen types
     micro_interpreter: tflite::MicroInterpreter,
-
-    // owned objects
-    #[allow(unused)]
-    micro_error_reporter: MicroErrorReporter,
 
     // See https://doc.rust-lang.org/std/marker/struct.PhantomData.html#unused-lifetime-parameters
     _phantom: PhantomData<&'a ()>,
@@ -60,8 +60,15 @@ impl<'a> MicroInterpreter<'a> {
 
         let tensor_arena_size = tensor_arena.len();
         let tensor_arena = tensor_arena.as_mut_ptr();
-        let micro_error_reporter = MicroErrorReporter::new();
-        let micro_error_reporter_ref = &micro_error_reporter;
+
+        let micro_error_reporter_ref = unsafe {
+            // Initialise MicroErrorReporter. We assume that `new` is a pure
+            // function that only fills in the MicroErrorReporter vtable
+            let micro_error_reporter = MicroErrorReporter::new();
+            *&mut ERROR_REPORTER = MaybeUninit::new(micro_error_reporter);
+
+            &ERROR_REPORTER // return reference with 'static lifetime
+        };
 
         // Create interpreter
         let micro_interpreter = unsafe {
@@ -90,7 +97,6 @@ impl<'a> MicroInterpreter<'a> {
         // Create self
         Self {
             micro_interpreter,
-            micro_error_reporter,
             _phantom: PhantomData,
         }
     }
