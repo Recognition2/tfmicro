@@ -42,12 +42,12 @@ fn magic_wand() {
     // RingScore
     // SlopeScore
     // NegativeScore
-    test_gesture(&interpreter, slope, 2);
-    test_gesture(&interpreter, ring, 1);
+    test_gesture(&mut interpreter, slope, 2);
+    test_gesture(&mut interpreter, ring, 1);
 }
 
 fn test_gesture(
-    interpreter: &MicroInterpreter,
+    interpreter: &mut MicroInterpreter,
     data: &Vec<f32>,
     expected_idx: usize,
 ) {
@@ -57,28 +57,16 @@ fn test_gesture(
         input.tensor_info().dims,
         "Dimensions of input tensor"
     );
-    assert_eq!(
-        &bindings::TfLiteType::kTfLiteFloat32,
-        input.get_type(),
-        "Input tensor datatype"
-    );
 
     input.tensor_data_mut().clone_from_slice(data);
 
-    let status = interpreter.Invoke();
-    assert_eq!(bindings::TfLiteStatus::kTfLiteOk, status, "Invoke failed!");
+    interpreter.invoke().unwrap();
 
     let output = interpreter.output(0);
     assert_eq!(
         [1, 4],
         output.tensor_info().dims,
         "Dimensions of output tensor"
-    );
-
-    assert_eq!(
-        &bindings::TfLiteType::kTfLiteFloat32,
-        output.get_type(),
-        "Output tensor datatype"
     );
 
     // Four indices:
