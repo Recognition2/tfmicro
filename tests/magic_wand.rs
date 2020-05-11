@@ -44,50 +44,56 @@ fn magic_wand() {
     // RingScore
     // SlopeScore
     // NegativeScore
-    for &(input_data, output_max_idx) in [(ring, 1), (slope, 2)].iter().rev() {
-        let input = interpreter.input(0);
-        assert_eq!(
-            [1, 128, 3, 1],
-            input.tensor_info().dims,
-            "Dimensions of input tensor"
-        );
-        assert_eq!(
-            &bindings::TfLiteType::kTfLiteFloat32,
-            input.get_type(),
-            "Input tensor datatype"
-        );
+    test_gesture(&interpreter, slope, 2);
+    test_gesture(&interpreter, ring, 1);
+}
+fn test_gesture(
+    interpreter: &MicroInterpreter,
+    data: &Vec<f32>,
+    expected_idx: usize,
+) {
+    let input = interpreter.input(0);
+    assert_eq!(
+        [1, 128, 3, 1],
+        input.tensor_info().dims,
+        "Dimensions of input tensor"
+    );
+    assert_eq!(
+        &bindings::TfLiteType::kTfLiteFloat32,
+        input.get_type(),
+        "Input tensor datatype"
+    );
 
-        input.tensor_data_mut().clone_from_slice(input_data);
+    input.tensor_data_mut().clone_from_slice(data);
 
-        let status = interpreter.Invoke();
-        assert_eq!(bindings::TfLiteStatus::kTfLiteOk, status, "Invoke failed!");
+    let status = interpreter.Invoke();
+    assert_eq!(bindings::TfLiteStatus::kTfLiteOk, status, "Invoke failed!");
 
-        let output = interpreter.output(0);
-        assert_eq!(
-            [1, 4],
-            output.tensor_info().dims,
-            "Dimensions of output tensor"
-        );
+    let output = interpreter.output(0);
+    assert_eq!(
+        [1, 4],
+        output.tensor_info().dims,
+        "Dimensions of output tensor"
+    );
 
-        assert_eq!(
-            &bindings::TfLiteType::kTfLiteFloat32,
-            output.get_type(),
-            "Output tensor datatype"
-        );
+    assert_eq!(
+        &bindings::TfLiteType::kTfLiteFloat32,
+        output.get_type(),
+        "Output tensor datatype"
+    );
 
-        // Four indices:
-        // WingScore
-        // RingScore
-        // SlopeScore
-        // NegativeScore
-        dbg!(output.tensor_data::<f32>());
-        assert_eq!(
-            output
-                .tensor_data::<f32>()
-                .into_iter()
-                .position_max_by(|&a, &b| a.partial_cmp(b).unwrap())
-                .unwrap(),
-            output_max_idx
-        );
-    }
+    // Four indices:
+    // WingScore
+    // RingScore
+    // SlopeScore
+    // NegativeScore
+    dbg!(output.tensor_data::<f32>());
+    assert_eq!(
+        output
+            .tensor_data::<f32>()
+            .iter()
+            .position_max_by(|&a, &b| a.partial_cmp(b).unwrap())
+            .unwrap(),
+        expected_idx
+    );
 }

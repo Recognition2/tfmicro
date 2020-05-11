@@ -24,7 +24,7 @@ fn micro_speech() {
     const TENSOR_ARENA_SIZE: usize = 10 * 1024;
     let mut tensor_arena: [u8; TENSOR_ARENA_SIZE] = [0; TENSOR_ARENA_SIZE];
 
-    // Pull in all operation implementations
+    // Pull in all needed operation implementations
     let micro_op_resolver = MicroOpResolver::new_for_microspeech();
 
     // Build an interpreter to run the model with
@@ -51,6 +51,7 @@ fn micro_speech() {
     assert_eq!([1, 4], output.tensor_info().dims);
     assert_eq!(&bindings::TfLiteType::kTfLiteUInt8, output.get_type());
 
+    dbg!(output.tensor_data::<u8>());
     let silence_score: u8 = output.tensor_data()[0];
     let unknown_score: u8 = output.tensor_data()[1];
     let yes_score: u8 = output.tensor_data()[2];
@@ -69,6 +70,7 @@ fn micro_speech() {
     assert_eq!([1, 4], output.tensor_info().dims);
     assert_eq!(&bindings::TfLiteType::kTfLiteUInt8, output.get_type());
 
+    dbg!(output.tensor_data::<u8>());
     let silence_score: u8 = output.tensor_data()[0];
     let unknown_score: u8 = output.tensor_data()[1];
     let yes_score: u8 = output.tensor_data()[2];
