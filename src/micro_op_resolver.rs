@@ -14,8 +14,8 @@ pub trait MicroMutableOpResolver {
     fn to_inner(self) -> tflite::MicroMutableOpResolver;
 }
 
-///
-#[repr(transparent)]
+/// An Op Resolver populated with all available operators
+#[derive(Default)]
 pub struct AllOpResolver(tflite::MicroMutableOpResolver);
 impl MicroMutableOpResolver for AllOpResolver {
     fn to_inner(self) -> tflite::MicroMutableOpResolver {
@@ -23,18 +23,23 @@ impl MicroMutableOpResolver for AllOpResolver {
     }
 }
 
-///
-#[repr(transparent)]
-pub struct MutableOpResolver(tflite::MicroMutableOpResolver);
+/// An Op Resolver that has no operators by default, but can be added by
+/// calling methods in a builder pattern
+#[derive(Default)]
+pub struct MutableOpResolver {
+    pub(crate) inner: tflite::MicroMutableOpResolver,
+    capacity: usize,
+    len: usize,
+}
 impl MicroMutableOpResolver for MutableOpResolver {
     fn to_inner(self) -> tflite::MicroMutableOpResolver {
-        self.0
+        self.inner
     }
 }
 
 impl AllOpResolver {
     /// Create a new Op Resolver, populated with all available
-    /// operators (`AllOpsResolver`)
+    /// operators
     pub fn new() -> Self {
         // The C++ compiler fills in the MicroMutableOpResolver with the
         // operators enumerated in AllOpsResolver
@@ -52,17 +57,27 @@ impl AllOpResolver {
 }
 
 impl MutableOpResolver {
-    // let tflite_registrations_max = cpp!(unsafe [] -> usize as "size_t" {
-    //     return TFLITE_REGISTRATIONS_MAX;
-    // });
+    /// Check the number of operators is OK
+    pub(crate) fn check_then_inc_len(&mut self) {
+        assert!(self.len < self.capacity,
+              "Tensorflow micro does not support more than {} operators. See TFLITE_REGISTRATIONS_MAX",
+                self.capacity);
 
-    // // Check the number of operators is OK
-    //   assert!(operators.len() < tflite_registrations_max,
-    //           "Tensorflow micro does not support more than {} operators. See TFLITE_REGISTRATIONS_MAX",
-    //           tflite_registrations_max);
+        self.len += 1;
+    }
+
+    /// Returns the current number of operators in this resolver
+    pub fn len(&self) -> usize {
+        self.len
+    }
 
     /// Create a new MutableOpResolver, initially empty
     pub fn empty() -> Self {
+        // Get the maximum number of registrations
+        let tflite_registrations_max = cpp!(unsafe [] -> usize as "size_t" {
+            return TFLITE_REGISTRATIONS_MAX;
+        });
+
         let micro_op_resolver = unsafe {
             // Create resolver object
             //
@@ -78,6 +93,10 @@ impl MutableOpResolver {
             })
         };
 
-        Self(micro_op_resolver)
+        Self {
+            inner: micro_op_resolver,
+            capacity: tflite_registrations_max,
+            len: 0,
+        }
     }
 }
