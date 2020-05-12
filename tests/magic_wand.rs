@@ -2,7 +2,7 @@ extern crate itertools;
 use itertools::Itertools;
 
 use tfmicro::{
-    micro_interpreter::MicroInterpreter, micro_op_resolver::MicroOpResolver,
+    micro_interpreter::MicroInterpreter, micro_op_resolver::MutableOpResolver,
     model::Model,
 };
 
@@ -32,7 +32,12 @@ fn magic_wand() {
     const TENSOR_ARENA_SIZE: usize = 60 * 1024;
     let mut tensor_arena: [u8; TENSOR_ARENA_SIZE] = [0; TENSOR_ARENA_SIZE];
 
-    let micro_op_resolver = MicroOpResolver::new_for_magic_wand();
+    let micro_op_resolver = MutableOpResolver::empty()
+        .depthwise_conv_2d()
+        .max_pool_2d()
+        .conv_2d()
+        .fully_connected()
+        .softmax();
 
     let mut interpreter =
         MicroInterpreter::new(&model, micro_op_resolver, &mut tensor_arena[..]);
