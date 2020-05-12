@@ -106,6 +106,13 @@ impl<'a> MicroInterpreter<'a> {
     /// Create a new micro_interpreter from a Model, a MicroOpResolver and
     /// a tensor arena (scratchpad).
     ///
+    /// # Errors
+    ///
+    /// Returns `Error::InterpreterInitError` if there is an error creating
+    /// the interpreter.
+    ///
+    /// Returns `Error::AllocateTensors` if there is error in the call to
+    /// `AllocateTensors`.
     pub fn new<'m: 'a, 't: 'a, TArena, OpResolver>(
         model: &'m Model,
         resolver: OpResolver,
