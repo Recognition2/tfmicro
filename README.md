@@ -17,6 +17,12 @@ go. You will need a C++ compiler behind the scenes, including for
 cross-compiling targets, but in most cases this will be present
 already.
 
+The aim of this implementation is to provide usability alongside all the
+usual Rust guarantees. Nonetheless this crate calls into a very significant
+amount of C/C++ code, and you should employ the usual methods (static
+analysis, memory guards, fuzzing) as you would with any other legacy C/C++
+codebase.
+
 ## Getting started
 
 Add `tfmicro` in the dependencies section of your `Cargo.toml`
