@@ -22,7 +22,7 @@
 //!     &model,
 //!     all_op_resolver,
 //!     &mut tensor_arena[..],
-//! );
+//! ).unwrap();
 //! ```
 //!
 //! Remember that once once you have instantiated the `MicroInterpreter`,
@@ -50,7 +50,7 @@
 //!         &model,
 //!         all_op_resolver,
 //!         &mut tensor_arena[..],
-//!     )
+//!     ).unwrap()
 //! }; // Error [model, ..] dropped here whilst still borrowed
 //!
 //! // interpreter used here
@@ -62,6 +62,7 @@ use core::mem::MaybeUninit;
 
 use crate::micro_error_reporter::MicroErrorReporter;
 use crate::micro_op_resolver::MicroOpResolver;
+use crate::Error;
 use crate::{model::Model, tensor::Tensor, Status};
 use managed::ManagedSlice;
 
@@ -109,7 +110,7 @@ impl<'a> MicroInterpreter<'a> {
         model: &'m Model,
         resolver: MicroOpResolver,
         tensor_arena: TArena,
-    ) -> Self
+    ) -> Result<Self, Error>
     where
         TArena: Into<ManagedSlice<'t, u8>>,
     {
@@ -128,14 +129,19 @@ impl<'a> MicroInterpreter<'a> {
             &ERROR_REPORTER // return reference with 'static lifetime
         };
 
+        let mut status = bindings::TfLiteStatus::kTfLiteError;
+
         // Create interpreter
-        let micro_interpreter = unsafe {
+        let mut micro_interpreter = unsafe {
+            let status_ref = &mut status;
+
             cpp! ([
                 model as "const tflite::Model*",
                 resolver as "tflite::MicroMutableOpResolver",
                 tensor_arena as "uint8_t*",
                 tensor_arena_size as "size_t",
-                micro_error_reporter_ref as "tflite::MicroErrorReporter*"
+                micro_error_reporter_ref as "tflite::MicroErrorReporter*",
+                status_ref as "TfLiteStatus*"
             ] -> tflite::MicroInterpreter as "tflite::MicroInterpreter"
               {
                   tflite::ErrorReporter* error_reporter = micro_error_reporter_ref;
@@ -146,17 +152,34 @@ impl<'a> MicroInterpreter<'a> {
                                                        tensor_arena_size,
                                                        error_reporter);
 
-                  interpreter.AllocateTensors();
+                  // Get status
+                  *status_ref = interpreter.initialization_status();
 
                   return interpreter;
               })
         };
+        if status != bindings::TfLiteStatus::kTfLiteOk {
+            return Err(Error::InterpreterInitError);
+        }
+
+        // Allocate tensors
+        let allocate_tensors_status = unsafe {
+            let interpreter_ref = &mut micro_interpreter;
+
+            cpp! ([interpreter_ref as "tflite::MicroInterpreter*"]
+                   -> bindings::TfLiteStatus as "TfLiteStatus" {
+                return interpreter_ref->AllocateTensors();
+            })
+        };
+        if allocate_tensors_status != bindings::TfLiteStatus::kTfLiteOk {
+            return Err(Error::AllocateTensorsError);
+        }
 
         // Create self
-        Self {
+        Ok(Self {
             micro_interpreter,
             _phantom: PhantomData,
-        }
+        })
     }
 
     /// Returns a mutable reference to the nth input tensor
@@ -254,7 +277,8 @@ mod tests {
             &model,
             all_op_resolver,
             &mut tensor_arena[..],
-        );
+        )
+        .unwrap();
     }
 
     #[cfg(feature = "alloc")]
@@ -276,6 +300,7 @@ mod tests {
         // arena
         let tensor_arena: Vec<u8> = vec![0u8; 4 * 1024];
 
-        let _ = MicroInterpreter::new(&model, all_op_resolver, tensor_arena);
+        let _ = MicroInterpreter::new(&model, all_op_resolver, tensor_arena)
+            .unwrap();
     }
 }

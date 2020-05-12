@@ -56,6 +56,8 @@ mod interop;
 #[derive(Clone, Copy, PartialEq, Debug)]
 pub enum Error {
     InvalidModel,
+    InterpreterInitError,
+    AllocateTensorsError,
 }
 
 /// The status resulting from a TensorFlow operation
