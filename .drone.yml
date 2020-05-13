@@ -10,7 +10,7 @@ steps:
 - name: submodules
   image: alpine/git
   commands:
-  - git submodule update --recursive --remote
+  - git submodule update --init --recursive --remote
 
 - name: build_tensorflow
   image: gcc
