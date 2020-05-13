@@ -17,14 +17,12 @@ fn magic_wand() {
         &include_bytes!("../examples/models/ring_micro_f9643d42_nohash_4.data")
             .chunks_exact(4)
             .map(|c| f32::from_be_bytes([c[0], c[1], c[2], c[3]]))
-            .map(|f| NotNan::new(f).unwrap())
             .collect_vec();
     let slope = &include_bytes!(
         "../examples/models/slope_micro_f2e59fea_nohash_1.data"
     )
     .chunks_exact(4)
     .map(|c| f32::from_be_bytes([c[0], c[1], c[2], c[3]]))
-    .map(|f| NotNan::new(f).unwrap())
     .collect_vec();
 
     // Instantiate the model from the file
