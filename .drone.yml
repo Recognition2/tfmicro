@@ -11,10 +11,10 @@ steps:
   image: drillster/drone-volume-cache
   restore: true
   mount:
-  - ./target
-  - ./submodules
+    - ./target
+    - ./submodules
   volumes:
-  - /tmp/cache:/cache
+    - /tmp/cache:/cache
 
 - name: submodules
   image: alpine/git
@@ -44,9 +44,9 @@ steps:
   image: drillster/drone-volume-cache
   rebuild: true
   mount:
-  - ./target
-  - ./submodules
+    - ./target
+    - ./submodules
   volumes:
-  - /tmp/cache:/cache
+    - /tmp/cache:/cache
 
 
