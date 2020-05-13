@@ -1,12 +1,11 @@
 extern crate itertools;
 use itertools::Itertools;
-
+use log::info;
+use ordered_float::NotNan;
 use tfmicro::{
     micro_interpreter::MicroInterpreter, micro_op_resolver::MicroOpResolver,
     model::Model,
 };
-
-use log::info;
 
 #[test]
 fn magic_wand() {
@@ -18,12 +17,14 @@ fn magic_wand() {
         &include_bytes!("../examples/models/ring_micro_f9643d42_nohash_4.data")
             .chunks_exact(4)
             .map(|c| f32::from_be_bytes([c[0], c[1], c[2], c[3]]))
+            .map(|f| NotNan::new(f).unwrap())
             .collect_vec();
     let slope = &include_bytes!(
         "../examples/models/slope_micro_f2e59fea_nohash_1.data"
     )
     .chunks_exact(4)
     .map(|c| f32::from_be_bytes([c[0], c[1], c[2], c[3]]))
+    .map(|f| NotNan::new(f).unwrap())
     .collect_vec();
 
     // Instantiate the model from the file
@@ -48,7 +49,7 @@ fn magic_wand() {
 
 fn test_gesture(
     interpreter: &mut MicroInterpreter,
-    data: &Vec<f32>,
+    data: &Vec<NotNan<f32>>,
     expected_idx: usize,
 ) {
     let input = interpreter.input(0);
@@ -77,9 +78,9 @@ fn test_gesture(
     dbg!(output.tensor_data::<f32>());
     assert_eq!(
         output
-            .tensor_data::<f32>()
+            .tensor_data::<NotNan<f32>>()
             .iter()
-            .position_max_by(|&a, &b| a.partial_cmp(b).unwrap())
+            .position_max()
             .unwrap(),
         expected_idx
     );
