@@ -4,6 +4,7 @@ use core::convert::{TryFrom, TryInto};
 use core::mem::size_of;
 use core::slice;
 use cty::c_int;
+use ordered_float::NotNan;
 
 use crate::bindings;
 
@@ -42,6 +43,12 @@ impl TryFrom<bindings::TfLiteType> for ElementType {
 /// Marker trait for those intristic types we support
 pub trait ElemTypeOf {
     fn elem_type_of() -> ElementType;
+}
+
+impl ElemTypeOf for NotNan<f32> {
+    fn elem_type_of() -> ElementType {
+        ElementType::Float32
+    }
 }
 impl ElemTypeOf for f32 {
     fn elem_type_of() -> ElementType {

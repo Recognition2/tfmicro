@@ -1,12 +1,11 @@
 extern crate itertools;
 use itertools::Itertools;
-
+use log::info;
+use ordered_float::NotNan;
 use tfmicro::{
     micro_interpreter::MicroInterpreter, micro_op_resolver::MicroOpResolver,
     model::Model,
 };
-
-use log::info;
 
 #[test]
 fn magic_wand() {
@@ -49,7 +48,7 @@ fn magic_wand() {
 
 fn test_gesture(
     interpreter: &mut MicroInterpreter,
-    data: &Vec<f32>,
+    data: &Vec<NotNan<f32>>,
     expected_idx: usize,
 ) {
     let input = interpreter.input(0);
@@ -78,9 +77,9 @@ fn test_gesture(
     dbg!(output.tensor_data::<f32>());
     assert_eq!(
         output
-            .tensor_data::<f32>()
+            .tensor_data::<NotNan<f32>>()
             .iter()
-            .position_max_by(|&a, &b| a.partial_cmp(b).unwrap())
+            .position_max()
             .unwrap(),
         expected_idx
     );
