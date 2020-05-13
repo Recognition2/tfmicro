@@ -7,6 +7,15 @@ workspace:
   path: /submodules/tensorflow
 
 steps:
+- name: restore_cache
+  image: drillster/drone-volume-cache
+  restore: true
+  mount:
+  - ./target
+  - ./submodules
+  volumes:
+  - /tmp/cache:/cache
+
 - name: submodules
   image: alpine/git
   commands:
@@ -30,4 +39,14 @@ steps:
   - cargo build --tests --release
   - cargo test
   - cargo test --release
+
+- name: rebuild_cache
+  image: drillster/drone-volume-cache
+  rebuild: true
+  mount:
+  - ./target
+  - ./submodules
+  volumes:
+  - /tmp/cache:/cache
+
 
