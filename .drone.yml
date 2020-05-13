@@ -3,11 +3,19 @@ kind: pipeline
 type: docker
 name: default
 
+workspace:
+  base: /submodules/tensorflow
+
 steps:
 - name: submodules
   image: alpine/git
   commands:
   - git submodule update --recursive --remote
+
+- name: build_tensorflow
+  image: gcc
+  commands:
+  - PWD=$PWD/submodules/tensorflow make -f tensorflow/lite/micro/tools/make/Makefile test_magic_wand_test 
 
 - name: build
   image: rust:latest
@@ -16,7 +24,6 @@ steps:
     CARGO_HOME: /var/cache/drone/cargo
   commands:
   - apt-get update -qq; apt-get install -y build-essential curl xz-utils clang llvm
-  - cd submodules/tensorflow && make -f tensorflow/lite/micro/tools/make/Makefile test_magic_wand_test 
   - cargo build
   - cargo test
   - cargo test --release
