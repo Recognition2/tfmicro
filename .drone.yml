@@ -15,6 +15,7 @@ steps:
 - name: build_tensorflow
   image: gcc
   commands:
+  - apt-get update -qq; apt-get install -y xxd
   - cd submodules/tensorflow
   - make -f tensorflow/lite/micro/tools/make/Makefile test_magic_wand_test 
 
