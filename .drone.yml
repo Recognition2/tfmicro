@@ -4,7 +4,7 @@ type: docker
 name: default
 
 workspace:
-  base: /submodules/tensorflow
+  path: /submodules/tensorflow
 
 steps:
 - name: submodules
@@ -15,7 +15,7 @@ steps:
 - name: build_tensorflow
   image: gcc
   commands:
-  - PWD=$PWD/submodules/tensorflow make -f tensorflow/lite/micro/tools/make/Makefile test_magic_wand_test 
+  - make -f tensorflow/lite/micro/tools/make/Makefile test_magic_wand_test 
 
 - name: build
   image: rust:latest
