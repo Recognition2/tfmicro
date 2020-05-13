@@ -1,7 +1,7 @@
 //! micro_speech example
 
 use tfmicro::{
-    micro_interpreter::MicroInterpreter, micro_op_resolver::MicroOpResolver,
+    micro_interpreter::MicroInterpreter, micro_op_resolver::MutableOpResolver,
     model::Model,
 };
 
@@ -28,7 +28,15 @@ fn micro_speech() {
     let mut tensor_arena: [u8; TENSOR_ARENA_SIZE] = [0; TENSOR_ARENA_SIZE];
 
     // Pull in all needed operation implementations
-    let micro_op_resolver = MicroOpResolver::new_for_microspeech();
+    // let operators = [
+    //     Operators::DepthwiseConv2d,
+    //     Operators::FullyConnected,
+    //     Operators::Softmax,
+    // ];
+    let micro_op_resolver = MutableOpResolver::empty()
+        .depthwise_conv_2d()
+        .fully_connected()
+        .softmax();
 
     // Build an interpreter to run the model with
     let mut interpreter =

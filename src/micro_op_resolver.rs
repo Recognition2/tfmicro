@@ -8,13 +8,39 @@ cpp! {{
     #include "tensorflow/lite/micro/kernels/all_ops_resolver.h"
 }}
 
-#[repr(transparent)]
-pub struct MicroOpResolver(tflite::MicroMutableOpResolver);
+/// Marker trait for types that have the memory representation of a
+/// `tflite::MicroMutableOpResolver`
+pub trait MicroMutableOpResolver {
+    fn to_inner(self) -> tflite::MicroMutableOpResolver;
+}
 
-impl MicroOpResolver {
-    /// Create a new MicroOpResolver, populated with all available
-    /// operators (`AllOpsResolver`)
-    pub fn new_with_all_ops() -> Self {
+/// An Op Resolver populated with all available operators
+#[derive(Default)]
+pub struct AllOpResolver(tflite::MicroMutableOpResolver);
+impl MicroMutableOpResolver for AllOpResolver {
+    fn to_inner(self) -> tflite::MicroMutableOpResolver {
+        self.0
+    }
+}
+
+/// An Op Resolver that has no operators by default, but can be added by
+/// calling methods in a builder pattern
+#[derive(Default)]
+pub struct MutableOpResolver {
+    pub(crate) inner: tflite::MicroMutableOpResolver,
+    capacity: usize,
+    len: usize,
+}
+impl MicroMutableOpResolver for MutableOpResolver {
+    fn to_inner(self) -> tflite::MicroMutableOpResolver {
+        self.inner
+    }
+}
+
+impl AllOpResolver {
+    /// Create a new Op Resolver, populated with all available
+    /// operators
+    pub fn new() -> Self {
         // The C++ compiler fills in the MicroMutableOpResolver with the
         // operators enumerated in AllOpsResolver
         let micro_op_resolver = unsafe {
@@ -28,57 +54,49 @@ impl MicroOpResolver {
 
         Self(micro_op_resolver)
     }
+}
 
-    /// Create a new MicroOpResolver
-    pub fn new_for_microspeech() -> Self {
-        // Select only the operations needed for the micro_speech example.
-        //
-        // We still need to take the full memory footprint of
-        // `MicroMutableOpResolver`, in order to be layout
-        // compatible. However the unreferenced operations themselves will
-        // be optimised away
-        let micro_op_resolver = unsafe {
-            cpp!([] -> tflite::MicroMutableOpResolver as "tflite::MicroOpResolver<TFLITE_REGISTRATIONS_MAX>" {
+impl MutableOpResolver {
+    /// Check the number of operators is OK
+    pub(crate) fn check_then_inc_len(&mut self) {
+        assert!(self.len < self.capacity,
+              "Tensorflow micro does not support more than {} operators. See TFLITE_REGISTRATIONS_MAX",
+                self.capacity);
 
-                // ops for microspeech
-                tflite::MicroOpResolver<TFLITE_REGISTRATIONS_MAX> resolver;
-                resolver.AddBuiltin(
-                    tflite::BuiltinOperator_DEPTHWISE_CONV_2D,
-                    tflite::ops::micro::Register_DEPTHWISE_CONV_2D());
-
-                resolver.AddBuiltin(
-                    tflite::BuiltinOperator_FULLY_CONNECTED,
-                    tflite::ops::micro::Register_FULLY_CONNECTED());
-
-                resolver.AddBuiltin(
-                    tflite::BuiltinOperator_SOFTMAX,
-                    tflite::ops::micro::Register_SOFTMAX());
-
-                return resolver;
-            })
-        };
-
-        Self(micro_op_resolver)
+        self.len += 1;
     }
-    pub fn new_for_magic_wand() -> Self {
+
+    /// Returns the current number of operators in this resolver
+    pub fn len(&self) -> usize {
+        self.len
+    }
+
+    /// Create a new MutableOpResolver, initially empty
+    pub fn empty() -> Self {
+        // Get the maximum number of registrations
+        let tflite_registrations_max = cpp!(unsafe [] -> usize as "size_t" {
+            return TFLITE_REGISTRATIONS_MAX;
+        });
+
         let micro_op_resolver = unsafe {
-            cpp!([] -> tflite::MicroMutableOpResolver as "tflite::MicroOpResolver<TFLITE_REGISTRATIONS_MAX>" {
+            // Create resolver object
+            //
+            // We still need to take the full memory footprint of
+            // `MicroMutableOpResolver`, in order to be layout
+            // compatible. However the unreferenced operations themselves will
+            // be optimised away
+            cpp!([] -> tflite::MicroMutableOpResolver as
+                 "tflite::MicroOpResolver<TFLITE_REGISTRATIONS_MAX>" {
 
-                tflite::MicroOpResolver<TFLITE_REGISTRATIONS_MAX> resolver;  // NOLINT
-                resolver.AddBuiltin(tflite::BuiltinOperator_DEPTHWISE_CONV_2D,
-                    tflite::ops::micro::Register_DEPTHWISE_CONV_2D());
-                resolver.AddBuiltin(tflite::BuiltinOperator_MAX_POOL_2D,
-                    tflite::ops::micro::Register_MAX_POOL_2D());
-                resolver.AddBuiltin(tflite::BuiltinOperator_CONV_2D,
-                    tflite::ops::micro::Register_CONV_2D());
-                resolver.AddBuiltin(tflite::BuiltinOperator_FULLY_CONNECTED,
-                    tflite::ops::micro::Register_FULLY_CONNECTED());
-                resolver.AddBuiltin(tflite::BuiltinOperator_SOFTMAX,
-                    tflite::ops::micro::Register_SOFTMAX());
+                tflite::MicroOpResolver<TFLITE_REGISTRATIONS_MAX> resolver;
                 return resolver;
-
             })
         };
-        Self(micro_op_resolver)
+
+        Self {
+            inner: micro_op_resolver,
+            capacity: tflite_registrations_max,
+            len: 0,
+        }
     }
 }
