@@ -53,7 +53,7 @@ fn magic_wand() {
 
 fn test_gesture(
     interpreter: &mut MicroInterpreter,
-    data: &Vec<NotNan<f32>>,
+    data: &Vec<f32>,
     expected_idx: usize,
 ) {
     let input = interpreter.input(0);
