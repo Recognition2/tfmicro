@@ -12,4 +12,5 @@ steps:
   commands:
   - cargo build
   - cargo test
+  - cargo test --release
 
