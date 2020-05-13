@@ -3,19 +3,7 @@ kind: pipeline
 type: docker
 name: default
 
-workspace:
-  path: /submodules/tensorflow
-
 steps:
-- name: restore_cache
-  image: drillster/drone-volume-cache
-  restore: true
-  mount:
-    - ./target
-    - ./submodules
-  volumes:
-    - /tmp/cache:/cache
-
 - name: submodules
   image: alpine/git
   commands:
@@ -24,7 +12,7 @@ steps:
 - name: build_tensorflow
   image: gcc
   commands:
-  - apt-get update -qq; apt-get install -y xxd
+  - apt-get update -qq >/dev/null 2>&1 && apt-get install -yqq xxd
   - cd submodules/tensorflow
   - make -f tensorflow/lite/micro/tools/make/Makefile test_magic_wand_test 
 
@@ -34,19 +22,10 @@ steps:
     CARGO_TARGET_DIR: /var/cache/drone/cargo
     CARGO_HOME: /var/cache/drone/cargo
   commands:
-  - apt-get update -qq; apt-get install -y build-essential curl xz-utils clang llvm
+  - apt-get update -qq >/dev/null 2>&1 && apt-get install -qqy build-essential clang llvm
   - cargo build --tests
   - cargo build --tests --release
   - cargo test
   - cargo test --release
-
-- name: rebuild_cache
-  image: drillster/drone-volume-cache
-  rebuild: true
-  mount:
-    - ./target
-    - ./submodules
-  volumes:
-    - /tmp/cache:/cache
 
 
