@@ -1,10 +1,15 @@
-image: rust:latest
-env:
-  - CARGO_TARGET_DIR=/var/cache/drone/cargo
-  - CARGO_HOME=/var/cache/drone/cargo
-script:
+---
+kind: pipeline
+type: docker
+name: default
+
+steps:
+- name: build
+  image: rust:latest
+  environment:
+    CARGO_TARGET_DIR: /var/cache/drone/cargo
+    CARGO_HOME: /var/cache/drone/cargo
+  commands:
   - cargo build
   - cargo test
-cache:
-  - /var/cache/drone/cargo
 
