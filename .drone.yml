@@ -16,6 +16,7 @@ steps:
     CARGO_HOME: /var/cache/drone/cargo
   commands:
   - apt-get update -qq; apt-get install -y build-essential curl xz-utils clang llvm
+  - make -f submodules/tensorflow/tensorflow/lite/micro/tools/make/Makefile test_magic_wand_test 
   - cargo build
   - cargo test
   - cargo test --release
