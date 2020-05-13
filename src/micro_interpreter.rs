@@ -4,7 +4,7 @@
 //!
 //! ```rust
 //! # use tfmicro::{
-//! #     micro_interpreter::MicroInterpreter, micro_op_resolver::MicroOpResolver,
+//! #     micro_interpreter::MicroInterpreter, micro_op_resolver::AllOpResolver,
 //! #     model::Model,
 //! # };
 //! // model
@@ -12,7 +12,7 @@
 //! let model = Model::from_buffer(&model[..]).unwrap();
 //!
 //! // resolver
-//! let all_op_resolver = MicroOpResolver::new_with_all_ops();
+//! let all_op_resolver = AllOpResolver::new();
 //!
 //! // arena
 //! const TENSOR_ARENA_SIZE: usize = 4 * 1024;
@@ -34,7 +34,7 @@
 //!
 //! ```compile_fail
 //! # use tfmicro::{
-//! #     micro_interpreter::MicroInterpreter, micro_op_resolver::MicroOpResolver,
+//! #     micro_interpreter::MicroInterpreter, micro_op_resolver::AllOpResolver,
 //! #     model::Model,
 //! # };
 //! let mut interpreter = {
@@ -42,7 +42,7 @@
 //!     let model = Model::from_buffer(&model[..]).unwrap();
 //!
 //!     // ...
-//! # let all_op_resolver = MicroOpResolver::new_with_all_ops();
+//! # let all_op_resolver = AllOpResolver::new();
 //! # const TENSOR_ARENA_SIZE: usize = 4 * 1024;
 //! # let mut tensor_arena: [u8; TENSOR_ARENA_SIZE] = [0; TENSOR_ARENA_SIZE];
 //!
@@ -61,7 +61,7 @@ use core::marker::PhantomData;
 use core::mem::MaybeUninit;
 
 use crate::micro_error_reporter::MicroErrorReporter;
-use crate::micro_op_resolver::MicroOpResolver;
+use crate::micro_op_resolver::MicroMutableOpResolver;
 use crate::Error;
 use crate::{model::Model, tensor::Tensor, Status};
 use managed::ManagedSlice;
@@ -106,14 +106,24 @@ impl<'a> MicroInterpreter<'a> {
     /// Create a new micro_interpreter from a Model, a MicroOpResolver and
     /// a tensor arena (scratchpad).
     ///
-    pub fn new<'m: 'a, 't: 'a, TArena>(
+    /// # Errors
+    ///
+    /// Returns `Error::InterpreterInitError` if there is an error creating
+    /// the interpreter.
+    ///
+    /// Returns `Error::AllocateTensors` if there is error in the call to
+    /// `AllocateTensors`.
+    pub fn new<'m: 'a, 't: 'a, TArena, OpResolver>(
         model: &'m Model,
-        resolver: MicroOpResolver,
+        resolver: OpResolver,
         tensor_arena: TArena,
     ) -> Result<Self, Error>
     where
+        OpResolver: MicroMutableOpResolver,
         TArena: Into<ManagedSlice<'t, u8>>,
     {
+        let resolver = resolver.to_inner();
+
         let mut tensor_arena = tensor_arena.into();
 
         let tensor_arena_size = tensor_arena.len();
@@ -259,6 +269,7 @@ impl<'a> MicroInterpreter<'a> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::micro_op_resolver::AllOpResolver;
 
     #[test]
     fn new_interpreter_static_arena() {
@@ -267,7 +278,7 @@ mod tests {
         let model = Model::from_buffer(&model[..]).unwrap();
 
         // resolver
-        let all_op_resolver = MicroOpResolver::new_with_all_ops();
+        let all_op_resolver = AllOpResolver::new();
 
         // arena
         const TENSOR_ARENA_SIZE: usize = 4 * 1024;
@@ -295,7 +306,7 @@ mod tests {
         let model = Model::from_buffer(&model[..]).unwrap();
 
         // resolver
-        let all_op_resolver = MicroOpResolver::new_with_all_ops();
+        let all_op_resolver = AllOpResolver::new();
 
         // arena
         let tensor_arena: Vec<u8> = vec![0u8; 4 * 1024];
