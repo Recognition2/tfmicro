@@ -10,7 +10,7 @@ steps:
     CARGO_TARGET_DIR: /var/cache/drone/cargo
     CARGO_HOME: /var/cache/drone/cargo
   commands:
-  - yes | apt install llvm clang
+  - apt-get update -qq; apt-get install -y build-essential curl xz-utils clang llvm
   - cargo build
   - cargo test
   - cargo test --release
