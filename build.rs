@@ -108,14 +108,6 @@ trait CompilationBuilder {
             .flag("-funsigned-char")
             .flag("-MMD")
             .flag("-std=c++11")
-            .flag("-Wvla")
-            .flag("-Wall")
-            .flag("-Wextra")
-            .flag("-Wno-unused-parameter")
-            .flag("-Wno-missing-field-initializers")
-            .flag("-Wno-write-strings")
-            .flag("-Wno-sign-compare")
-            .flag("-Wunused-function")
             .flag("-fno-delete-null-pointer-checks")
             .flag("-fomit-frame-pointer")
             .flag("-fpermissive")
@@ -125,6 +117,21 @@ trait CompilationBuilder {
             .define("TF_LITE_STATIC_MEMORY", None)
             .define("TF_LITE_MCU_DEBUG_LOG", None)
             .define("GEMMLOWP_ALLOW_SLOW_SCALAR_FALLBACK", None);
+
+        // warnings on by default
+        let build = if cfg!(feature = "no-c-warnings") {
+            build.flag("-w")
+        } else {
+            build
+                .flag("-Wvla")
+                .flag("-Wall")
+                .flag("-Wextra")
+                .flag("-Wno-unused-parameter")
+                .flag("-Wno-missing-field-initializers")
+                .flag("-Wno-write-strings")
+                .flag("-Wno-sign-compare")
+                .flag("-Wunused-function")
+        };
 
         if target.starts_with("thumb") {
             // unaligned accesses are usually a poor idea on ARM cortex-m
@@ -182,8 +189,6 @@ fn cc_tensorflow_library() {
             .cpp(true)
             .tensorflow_build_setup()
             .cpp_link_stdlib(None)
-            .warnings(false) // TODO remove
-            .extra_warnings(false)
             .include(tflite.parent().unwrap())
             .include(tflite.join("lite/micro/tools/make/downloads"))
             .include(tflite.join("lite/micro/tools/make/downloads/gemmlowp"))

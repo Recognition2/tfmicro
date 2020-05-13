@@ -23,9 +23,7 @@ steps:
     CARGO_HOME: /var/cache/drone/cargo
   commands:
   - apt-get update -qq >/dev/null 2>&1 && apt-get install -qqy build-essential clang llvm
-  - cargo build --tests
-  - cargo build --tests --release
-  - cargo test
-  - cargo test --release
-
-
+  - cargo build --tests --features=no-c-warnings
+  - cargo build --tests --release --features=no-c-warnings
+  - cargo test --features=no-c-warnings
+  - cargo test --release --features=no-c-warnings

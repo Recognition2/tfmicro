@@ -71,6 +71,7 @@ itertools = "0.9.0"
 build = []
 std = ["managed/std"]
 alloc = ["managed/alloc"]
+no-c-warnings = []
 
 [profile.release]
 debug = true # symbols are nice
