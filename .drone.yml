@@ -1,0 +1,10 @@
+image: rust:latest
+env:
+  - CARGO_TARGET_DIR=/var/cache/drone/cargo
+  - CARGO_HOME=/var/cache/drone/cargo
+script:
+  - cargo build
+  - cargo test
+cache:
+  - /var/cache/drone/cargo
+
