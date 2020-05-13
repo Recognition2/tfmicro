@@ -18,7 +18,9 @@ impl MicroErrorReporter {
     /// Create a new instance of a MicroErrorReporter
     pub fn new() -> Self {
         // All that happens here is that the C++ compiler fills in the
-        // const function pointer so runtime polymorphism can happen
+        // const function pointer so runtime polymorphism can happen.
+        //
+        // See further unsafe usage in micro_interpreter.rs
         let micro_error_reporter = unsafe {
             cpp!([] -> tflite::MicroErrorReporter as "tflite::MicroErrorReporter" {
                 tflite::MicroErrorReporter micro_error_reporter;
@@ -28,5 +30,11 @@ impl MicroErrorReporter {
         };
 
         Self(micro_error_reporter)
+    }
+}
+
+impl Default for MicroErrorReporter {
+    fn default() -> Self {
+        Self::new()
     }
 }

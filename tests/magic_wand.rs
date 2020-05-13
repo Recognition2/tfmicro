@@ -36,7 +36,8 @@ fn magic_wand() {
     let micro_op_resolver = MicroOpResolver::new_for_magic_wand();
 
     let mut interpreter =
-        MicroInterpreter::new(&model, micro_op_resolver, &mut tensor_arena[..]);
+        MicroInterpreter::new(&model, micro_op_resolver, &mut tensor_arena[..])
+            .unwrap();
 
     // Four indices:
     // WingScore

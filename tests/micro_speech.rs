@@ -32,7 +32,8 @@ fn micro_speech() {
 
     // Build an interpreter to run the model with
     let mut interpreter =
-        MicroInterpreter::new(&model, micro_op_resolver, &mut tensor_arena[..]);
+        MicroInterpreter::new(&model, micro_op_resolver, &mut tensor_arena[..])
+            .unwrap();
 
     // Check properties of the input sensor
     let input = interpreter.input(0);
@@ -77,6 +78,8 @@ fn micro_speech() {
     assert!(no_score > silence_score);
     assert!(no_score > unknown_score);
     assert!(no_score > yes_score);
+
+    interpreter.arena_used_bytes();
 
     info!("---- Done");
 }

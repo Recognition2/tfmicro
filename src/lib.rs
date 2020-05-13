@@ -18,7 +18,7 @@
 //!
 //! ```text
 //! [dependencies]
-//! tfmicro = `0.1.0`
+//! tfmicro = 0.1.0
 //! ```
 //!
 //! To understand how the [TensorFlow Micro C examples][c_examples] map to
@@ -56,6 +56,8 @@ mod interop;
 #[derive(Clone, Copy, PartialEq, Debug)]
 pub enum Error {
     InvalidModel,
+    InterpreterInitError,
+    AllocateTensorsError,
 }
 
 /// The status resulting from a TensorFlow operation
