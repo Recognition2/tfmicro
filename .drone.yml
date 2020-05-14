@@ -41,7 +41,7 @@ steps:
   - cargo test --release --features=no-c-warnings
 
 
-- name: restore-cache
+- name: rebuild-cache
   image: drillster/drone-volume-cache
   volumes:
   - name: cache
