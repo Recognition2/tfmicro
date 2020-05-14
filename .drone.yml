@@ -4,6 +4,18 @@ type: docker
 name: default
 
 steps:
+- name: restore-cache
+  image: drillster/drone-volume-cache
+  volumes:
+  - name: cache
+    path: /cache
+  settings:
+    restore: true
+    mount:
+      - ./target
+      - ./submodules
+
+
 - name: submodules
   image: alpine/git
   commands:
@@ -27,3 +39,21 @@ steps:
   - cargo build --tests --release --features=no-c-warnings
   - cargo test --features=no-c-warnings
   - cargo test --release --features=no-c-warnings
+
+
+- name: restore-cache
+  image: drillster/drone-volume-cache
+  volumes:
+  - name: cache
+    path: /cache
+  settings:
+    rebuild: true
+    mount:
+      - ./target
+      - ./submodules
+
+volumes:
+- name: cache
+  host:
+    path: /tmp/drone_cache
+
