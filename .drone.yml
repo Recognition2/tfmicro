@@ -9,6 +9,7 @@ steps:
   volumes:
   - name: cache
     path: /cache
+  ttl: 14
   settings:
     restore: true
     mount:
