@@ -4,19 +4,6 @@ type: docker
 name: default
 
 steps:
-- name: restore-cache
-  image: drillster/drone-volume-cache
-  volumes:
-  - name: cache
-    path: /cache
-  ttl: 14
-  settings:
-    restore: true
-    mount:
-      - /drone/src/target/
-      - ./submodules/tensorflow/lite/micro/tools/make/downloads/
-
-
 - name: submodules
   image: alpine/git
   commands:
@@ -40,21 +27,4 @@ steps:
   - cargo build --tests --release --features=no-c-warnings
   - cargo test --features=no-c-warnings
   - cargo test --release --features=no-c-warnings
-
-
-- name: rebuild-cache
-  image: drillster/drone-volume-cache
-  volumes:
-  - name: cache
-    path: /cache
-  settings:
-    rebuild: true
-    mount:
-      - /drone/src/target/
-      - ./submodules/tensorflow/lite/micro/tools/make/downloads/
-
-volumes:
-- name: cache
-  host:
-    path: /tmp/drone_cache
 
