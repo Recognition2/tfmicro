@@ -13,8 +13,8 @@ steps:
   settings:
     restore: true
     mount:
-      - ./target
-      - ./submodules
+      - /drone/src/target/
+      - ./submodules/tensorflow/lite/micro/tools/make/downloads/
 
 
 - name: submodules
@@ -50,8 +50,8 @@ steps:
   settings:
     rebuild: true
     mount:
-      - ./target
-      - ./submodules
+      - /drone/src/target/
+      - ./submodules/tensorflow/lite/micro/tools/make/downloads/
 
 volumes:
 - name: cache
