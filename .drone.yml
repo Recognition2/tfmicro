@@ -28,3 +28,23 @@ steps:
   - cargo test --features=no-c-warnings
   - cargo test --release --features=no-c-warnings
 
+- name: send telegram notification
+  image: appleboy/drone-telegram
+  settings:
+    to: 
+      from_secret:
+        telegram_group
+    token:
+      from_secret
+        telegram_token
+    format: markdown
+    message: >
+      Build {{build.number}} finished for {{repo.name}}, branch {{commit.branch}} due to {{build.event}}
+      Commit: [{{commit.message}}]({{commit.link}})
+      View the builder at {{build.link}}
+
+      {{#success build.status}}
+        Build succeeded! Yay!
+      {{else}}
+        Build failed. Go fix, {{commit.author}}!
+      {{/success}}
