@@ -1,24 +1,16 @@
 name: Rust
 
-on:
-  push:
-    branches: [ master ]
-  pull_request:
-    branches: [ master ]
+on: [push, pull_request]
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
-
     steps:
-    - name: Checkout submodules
-      uses: textbook/git-checkout-submodule-action@2.1.1
-
-     
+    - uses: actions/checkout@v2
+    - uses: textbook/git-checkout-submodule-action@2.1.1
+    - uses: actions-rs/toolchain@v1.0.6
     - name: Build
-      uses: actions/checkout@v2
-    - run: |
+      run: |
         cargo build --verbose --all-targets
         cargo build --release --verbose --all-targets
     - name: Run tests
