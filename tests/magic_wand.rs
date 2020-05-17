@@ -56,14 +56,12 @@ fn test_gesture(
     data: &Vec<f32>,
     expected_idx: usize,
 ) {
-    let input = interpreter.input(0);
+    interpreter.input(0, data).unwrap();
     assert_eq!(
         [1, 128, 3, 1],
-        input.tensor_info().dims,
+        interpreter.input_tensor_info(0).dims,
         "Dimensions of input tensor"
     );
-
-    input.tensor_data_mut().clone_from_slice(data);
 
     interpreter.invoke().unwrap();
 

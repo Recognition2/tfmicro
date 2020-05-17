@@ -44,13 +44,10 @@ fn micro_speech() {
             .unwrap();
 
     // Check properties of the input sensor
-    let input = interpreter.input(0);
-    assert_eq!([1, 49, 40, 1], input.tensor_info().dims);
+    assert_eq!([1, 49, 40, 1], interpreter.input_tensor_info(0).dims);
 
     // -------- 'yes' example --------
-
-    input.tensor_data_mut().clone_from_slice(yes);
-
+    interpreter.input(0, yes).unwrap();
     interpreter.invoke().unwrap();
 
     // Get output for 'yes'
@@ -69,8 +66,7 @@ fn micro_speech() {
 
     // -------- 'no' example --------
 
-    input.tensor_data_mut().clone_from_slice(no);
-
+    interpreter.input(0, no).unwrap();
     interpreter.invoke().unwrap();
 
     // Get output for 'no'

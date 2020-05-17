@@ -42,13 +42,14 @@ fn person_detection() {
             .unwrap();
 
     // Check properties of the input sensor
-    let input = interpreter.input(0);
-    assert_eq!([1, 96, 96, 1], input.tensor_info().dims);
+    // let input = interpreter.input(0);
+    interpreter.input(0, person).unwrap();
+    assert_eq!([1, 96, 96, 1], interpreter.input_tensor_info(0).dims);
 
     info!("Created setup");
 
     // -------- 'person' example ------------
-    input.tensor_data_mut().clone_from_slice(person);
+    // input.tensor_data_mut().clone_from_slice(person);
 
     interpreter.invoke().unwrap();
 
@@ -64,7 +65,8 @@ fn person_detection() {
     info!("---- Person output correct!");
 
     // ------- 'no person' example ----------
-    input.tensor_data_mut().clone_from_slice(no_person);
+    interpreter.input(0, no_person).unwrap();
+    // input.tensor_data_mut().clone_from_slice(no_person);
 
     interpreter.invoke().unwrap();
 

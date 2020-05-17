@@ -57,13 +57,15 @@
 //! # interpreter.input(0);
 //! ```
 
+use core::convert::TryInto;
 use core::marker::PhantomData;
 use core::mem::MaybeUninit;
 
 use crate::micro_error_reporter::MicroErrorReporter;
 use crate::micro_op_resolver::MicroMutableOpResolver;
+use crate::tensor::{ElemTypeOf, Tensor, TensorInfo};
 use crate::Error;
-use crate::{model::Model, tensor::Tensor, Status};
+use crate::{model::Model, Status};
 use managed::ManagedSlice;
 
 use crate::bindings;
@@ -192,11 +194,36 @@ impl<'a> MicroInterpreter<'a> {
         })
     }
 
+    pub fn input_tensor_info(&self, n: usize) -> TensorInfo {
+        let interpreter = &self.micro_interpreter;
+        let input_tensor: &'a Tensor = unsafe {
+            // Call method on micro_interpreter
+            let inp = cpp!([
+                interpreter as "tflite::MicroInterpreter*",
+                n as "size_t"]
+                -> *mut bindings::TfLiteTensor as "TfLiteTensor*" {
+
+                return interpreter->input(n);
+            });
+
+            // Check result
+            assert!(!inp.is_null(), "Obtained nullptr from TensorFlow");
+
+            // From bindgen type to Rust type
+            inp.into()
+        };
+        input_tensor.tensor_info()
+    }
+
     /// Returns a mutable reference to the nth input tensor
     ///
-    pub fn input(&mut self, n: usize) -> &'a mut Tensor {
+    pub fn input<T: ElemTypeOf + core::clone::Clone>(
+        &mut self,
+        n: usize,
+        data: &[T],
+    ) -> Result<(), Error> {
         let interpreter = &self.micro_interpreter;
-        unsafe {
+        let input_tensor: &mut Tensor = unsafe {
             // Call method on micro_interpreter
             let inp = cpp!([
                 interpreter as "tflite::MicroInterpreter*",
@@ -210,6 +237,17 @@ impl<'a> MicroInterpreter<'a> {
 
             // From bindgen type to Rust type
             inp.into()
+        };
+        let tensor_len = input_tensor
+            .tensor_info()
+            .dims
+            .iter()
+            .fold(1_i32, |acc, &el| acc * el);
+        if tensor_len != data.len().try_into().unwrap() {
+            Err(Error::InputDataLenMismatch)
+        } else {
+            input_tensor.tensor_data_mut().clone_from_slice(data);
+            Ok(())
         }
     }
 

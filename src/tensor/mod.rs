@@ -9,7 +9,7 @@ use ordered_float::NotNan;
 use crate::bindings;
 
 mod info;
-use info::TensorInfo;
+pub use info::TensorInfo;
 
 pub type TensorIndex = c_int;
 

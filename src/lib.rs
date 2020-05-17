@@ -58,6 +58,7 @@ pub enum Error {
     InvalidModel,
     InterpreterInitError,
     AllocateTensorsError,
+    InputDataLenMismatch,
 }
 
 /// The status resulting from a TensorFlow operation
