@@ -11,9 +11,9 @@ jobs:
       - uses: docker://gcc
       - name: Build tensorflow
         run: |
-          apt-get update -qq >/dev/null 2>&1 && apt-get install -yqq xxd
+          sudo apt-get update -qq >/dev/null 2>&1 && apt-get install -yqq xxd
           cd submodules/tensorflow
-          make -f tensorflow/lite/micro/tools/make/Makefile test_magic_wand_test 
+          sudo make -f tensorflow/lite/micro/tools/make/Makefile test_magic_wand_test 
           
   build-dev:
     runs-on: ubuntu-latest
