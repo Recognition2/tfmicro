@@ -183,21 +183,20 @@ fn cc_tensorflow_library() {
 
     if !tf_lib_name.exists() || cfg!(feature = "build") {
         println!("Building tensorflow micro");
+        let tfmicro_mdir = tflite.join("lite/micro/tools/make/");
         let start = Instant::now();
 
         cc::Build::new()
             .cpp(true)
             .tensorflow_build_setup()
             .cpp_link_stdlib(None)
+            //
             .include(tflite.parent().unwrap())
-            .include(tflite.join("lite/micro/tools/make/downloads"))
-            .include(tflite.join("lite/micro/tools/make/downloads/gemmlowp"))
-            .include(
-                tflite.join(
-                    "lite/micro/tools/make/downloads/flatbuffers/include",
-                ),
-            )
-            .include(tflite.join("lite/micro/tools/make/downloads/ruy"))
+            .include(tfmicro_mdir.join("downloads"))
+            .include(tfmicro_mdir.join("downloads/gemmlowp"))
+            .include(tfmicro_mdir.join("downloads/flatbuffers/include"))
+            .include(tfmicro_mdir.join("downloads/ruy"))
+            //
             .files(get_cc_files_glob(tflite.join("lite/micro/*.cc")))
             .files(get_cc_files_glob(tflite.join("lite/micro/kernels/*.cc")))
             .files(get_cc_files_glob(
