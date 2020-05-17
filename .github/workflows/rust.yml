@@ -3,7 +3,7 @@ name: Rust
 on: [push, pull_request]
 
 jobs:
-  build-tensorflow:
+  build-dev:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -14,12 +14,7 @@ jobs:
           sudo apt-get update -qq >/dev/null 2>&1 && sudo apt-get install -yqq xxd
           cd submodules/tensorflow
           sudo make -f tensorflow/lite/micro/tools/make/Makefile test_magic_wand_test 
-          
-  build-dev:
-    runs-on: ubuntu-latest
-    needs: build-tensorflow
-    steps:
-      - uses: actions-rs/toolchain@v1.0.6
+      - uses: actions-rs/toolchain@master
         with:
           toolchain: nightly
           override: true
@@ -28,25 +23,32 @@ jobs:
         run: |
           cargo build --verbose --all-targets --features=no-c-warnings
           cargo test --verbose  --all-targets --features=no-c-warnings
-
+          
   build-release:
     runs-on: ubuntu-latest
-    needs: build-tensorflow
     steps:
-      - uses: actions-rs/toolchain@v1.0.6
+      - uses: actions/checkout@v2
+      - uses: textbook/git-checkout-submodule-action@2.1.1
+      - uses: docker://gcc
+      - name: Build tensorflow
+        run: |
+          sudo apt-get update -qq >/dev/null 2>&1 && sudo apt-get install -yqq xxd
+          cd submodules/tensorflow
+          sudo make -f tensorflow/lite/micro/tools/make/Makefile test_magic_wand_test 
+      - uses: actions-rs/toolchain@master
         with:
           toolchain: nightly
           override: true
           components: rustfmt, clippy
       - name: Build
         run: |
-          cargo build --verbose --release --all-targets --features=no-c-warnings
-          cargo test --verbose --release --all-targets --features=no-c-warnings
+          cargo build --release --verbose --all-targets --features=no-c-warnings
+          cargo test --release --verbose  --all-targets --features=no-c-warnings
           
   clippy:
     runs-on: ubuntu-latest
-    needs: build-tensorflow
     steps:
+      - uses: actions/checkout@v2
       - uses: actions-rs/toolchain@v1.0.6
         with:
           toolchain: nightly
