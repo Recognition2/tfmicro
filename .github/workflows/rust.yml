@@ -12,9 +12,13 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v2
+    - name: Checkout submodules
+      uses: textbook/git-checkout-submodule-action@2.1.1
+
+     
     - name: Build
-      run: |
+      uses: actions/checkout@v2
+    - run: |
         cargo build --verbose --all-targets
         cargo build --release --verbose --all-targets
     - name: Run tests
