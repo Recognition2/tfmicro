@@ -11,25 +11,26 @@ jobs:
       - uses: docker://gcc
       - name: Build tensorflow
         run: |
-          sudo apt-get update -qq >/dev/null 2>&1 && sudo apt-get install -yqq xxd
+          sudo apt-get update -qq >/dev/null 2>&1 && sudo apt-get install -yqq xxd git
           cd submodules/tensorflow
-          sudo make -f tensorflow/lite/micro/tools/make/Makefile test_magic_wand_test 
+          sudo make -f tensorflow/lite/micro/tools/make/Makefile test_magic_wand_test
           sudo chmod a+rwx -R .
+          echo "::set-env name=TF_HASH::$(git submodule status | awk '{print $1}')"
       - name: Cache cargo registry
         uses: actions/cache@v1
         with:
           path: ~/.cargo/registry
-          key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.toml') }}
       - name: Cache cargo index
         uses: actions/cache@v1
         with:
           path: ~/.cargo/git
-          key: ${{ runner.os }}-cargo-index-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ runner.os }}-cargo-index-${{ hashFiles('**/Cargo.toml') }}
       - name: Cache cargo build
         uses: actions/cache@v1
         with:
           path: target
-          key: ${{ runner.os }}-cargo-build-target-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ runner.os }}-cargo-build-target-${{ env.TF_HASH }}-${{ hashFiles('**/build.rs') }}
       - uses: actions-rs/toolchain@master
         with:
           toolchain: nightly
@@ -39,7 +40,7 @@ jobs:
         run: |
           cargo build --verbose --all-targets --features=no-c-warnings
           cargo test --verbose  --all-targets --features=no-c-warnings
-          
+
   build-release:
     runs-on: ubuntu-latest
     steps:
@@ -48,25 +49,26 @@ jobs:
       - uses: docker://gcc
       - name: Build tensorflow
         run: |
-          sudo apt-get update -qq >/dev/null 2>&1 && sudo apt-get install -yqq xxd
+          sudo apt-get update -qq >/dev/null 2>&1 && sudo apt-get install -yqq xxd git
           cd submodules/tensorflow
           sudo make -f tensorflow/lite/micro/tools/make/Makefile test_magic_wand_test
-          sudo chmod a+rwx -R . 
+          sudo chmod a+rwx -R .
+          echo "::set-env name=TF_HASH::$(git submodule status | awk '{print $1}')"
       - name: Cache cargo registry
         uses: actions/cache@v1
         with:
           path: ~/.cargo/registry
-          key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.toml') }}
       - name: Cache cargo index
         uses: actions/cache@v1
         with:
           path: ~/.cargo/git
-          key: ${{ runner.os }}-cargo-index-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ runner.os }}-cargo-index-${{ hashFiles('**/Cargo.toml') }}
       - name: Cache cargo build
         uses: actions/cache@v1
         with:
           path: target
-          key: ${{ runner.os }}-cargo-build-target-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ runner.os }}-cargo-build-target-${{ env.TF_HASH }}-${{ hashFiles('**/build.rs') }}
       - uses: actions-rs/toolchain@master
         with:
           toolchain: nightly
@@ -84,25 +86,26 @@ jobs:
       - uses: docker://gcc
       - name: Build tensorflow
         run: |
-          sudo apt-get update -qq >/dev/null 2>&1 && sudo apt-get install -yqq xxd
+          sudo apt-get update -qq >/dev/null 2>&1 && sudo apt-get install -yqq xxd git
           cd submodules/tensorflow
-          sudo make -f tensorflow/lite/micro/tools/make/Makefile test_magic_wand_test 
+          sudo make -f tensorflow/lite/micro/tools/make/Makefile test_magic_wand_test
           sudo chmod a+rwx -R .
+          echo "::set-env name=TF_HASH::$(git submodule status | awk '{print $1}')"
       - name: Cache cargo registry
         uses: actions/cache@v1
         with:
           path: ~/.cargo/registry
-          key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.toml') }}
       - name: Cache cargo index
         uses: actions/cache@v1
         with:
           path: ~/.cargo/git
-          key: ${{ runner.os }}-cargo-index-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ runner.os }}-cargo-index-${{ hashFiles('**/Cargo.toml') }}
       - name: Cache cargo build
         uses: actions/cache@v1
         with:
           path: target
-          key: ${{ runner.os }}-cargo-build-target-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ runner.os }}-cargo-build-target-${{ env.TF_HASH }}-${{ hashFiles('**/build.rs') }}
       - uses: actions-rs/toolchain@master
         with:
           toolchain: nightly
@@ -112,4 +115,3 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           args: --all-features --all-targets  -- -D clippy::all
-          
