@@ -65,6 +65,6 @@ jobs:
           components: clippy
       - uses: actions-rs/clippy-check@v1
         with:
-          token: ${{ secrets.TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
           args: --all-features --all-targets  -- -D clippy::all
           
