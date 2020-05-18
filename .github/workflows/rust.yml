@@ -12,8 +12,7 @@ jobs:
       - name: Build tensorflow
         run: |
           sudo apt-get update -qq >/dev/null 2>&1 && sudo apt-get install -yqq xxd git
-          echo $(git status)
-          echo $(git submodule status | awk '{print $1}')
+          echo "Using tensorflow hash:  $(git submodule status | awk '{print $1}')"
           echo "::set-env name=TF_HASH::$(git submodule status | awk '{print $1}')"
           cd submodules/tensorflow
           sudo make -f tensorflow/lite/micro/tools/make/Makefile test_magic_wand_test
@@ -52,10 +51,11 @@ jobs:
       - name: Build tensorflow
         run: |
           sudo apt-get update -qq >/dev/null 2>&1 && sudo apt-get install -yqq xxd git
+          echo "Using tensorflow hash:  $(git submodule status | awk '{print $1}')"
+          echo "::set-env name=TF_HASH::$(git submodule status | awk '{print $1}')"
           cd submodules/tensorflow
           sudo make -f tensorflow/lite/micro/tools/make/Makefile test_magic_wand_test
           sudo chmod a+rwx -R .
-          echo "::set-env name=TF_HASH::$(git submodule status | awk '{print $1}')"
       - name: Cache cargo registry
         uses: actions/cache@v1
         with:
@@ -89,10 +89,11 @@ jobs:
       - name: Build tensorflow
         run: |
           sudo apt-get update -qq >/dev/null 2>&1 && sudo apt-get install -yqq xxd git
+          echo "Using tensorflow hash:  $(git submodule status | awk '{print $1}')"
+          echo "::set-env name=TF_HASH::$(git submodule status | awk '{print $1}')"
           cd submodules/tensorflow
           sudo make -f tensorflow/lite/micro/tools/make/Makefile test_magic_wand_test
           sudo chmod a+rwx -R .
-          echo "::set-env name=TF_HASH::$(git submodule status | awk '{print $1}')"
       - name: Cache cargo registry
         uses: actions/cache@v1
         with:
