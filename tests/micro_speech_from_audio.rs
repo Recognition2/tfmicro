@@ -77,107 +77,58 @@ fn micro_speech_with_audio() {
     assert_eq!([1, 49, 40, 1], interpreter.input_tensor_info(0).dims);
 
     // -------- 'yes' example --------
-    info!("Begin 'yes' example");
-    let mut yes_count = 0;
-    let mut no_count = 0;
 
-    // Run the front end on 30ms slices every 10ms
-    let micro_feature_slices = (0..97)
-        .map(|n| &yes_1000ms[n * 160..(n * 160) + 480])
+    // Run the front end on 30ms slices every 20ms
+    let micro_feature = (0..49)
+        .map(|n| &yes_1000ms[n * 320..(n * 320) + 480])
         .map(|audio_slice| micro_speech_frontend(&mut frontend, audio_slice))
-        .collect_vec();
+        .fold(vec![], |mut acc: Vec<u8>, slice| {
+            acc.extend(&slice[..]);
+            acc
+        });
 
-    for n in 0..48 {
-        // Collect 49 elements from a Vec<[u8; 40]> into a Vec<u8>
-        let micro_feature: Vec<u8> = micro_feature_slices[n..n + 49]
-            .into_iter()
-            .fold(vec![], |mut acc: Vec<u8>, slice| {
-                acc.extend(&slice[..]);
-                acc
-            });
+    assert_eq!(micro_feature.len(), 1960);
 
-        assert_eq!(micro_feature.len(), 1960);
+    // Invoke interpreter
+    interpreter.input(0, &micro_feature).unwrap();
+    interpreter.invoke().unwrap();
 
-        // Invoke interpreter
-        interpreter.input(0, &micro_feature).unwrap();
-        interpreter.invoke().unwrap();
+    // Get the output tensor
+    let output = interpreter.output(0);
+    assert_eq!([1, 4], output.tensor_info().dims);
 
-        // Get the output tensor
-        let output = interpreter.output(0);
-        assert_eq!([1, 4], output.tensor_info().dims);
+    info!("{:?}", output.tensor_data::<u8>());
 
-        info!("{:?}", output.tensor_data::<u8>());
-
-        // Count the number of `yes` values
-        let max_index =
-            output.tensor_data::<u8>().iter().position_max().unwrap();
-        if max_index == 2 && output.tensor_data::<u8>()[2] >= 220 {
-            yes_count += 1;
-        }
-
-        // Count the number of `no` values
-        let max_index =
-            output.tensor_data::<u8>().iter().position_max().unwrap();
-        if max_index == 3 && output.tensor_data::<u8>()[3] >= 220 {
-            no_count += 1;
-        }
-    }
-
-    info!("Counted {} 'yes' tensors", yes_count);
-    assert!(yes_count > 10);
-    assert_eq!(no_count, 0, "Counted a 'no' during the 'yes' example");
+    // Result must be 'yes'
+    assert_eq!(Some(2), output.tensor_data::<u8>().iter().position_max());
+    assert!(output.tensor_data::<u8>()[2] > 220);
 
     // -------- 'no' example --------
-    info!("Begin 'no' example");
-    let mut yes_count = 0;
-    let mut no_count = 0;
 
-    // Run the front end on 30ms slices every 10ms
-    let micro_feature_slices = (0..97)
-        .map(|n| &no_1000ms[n * 160..(n * 160) + 480])
+    // Run the front end on 30ms slices every 20ms
+    let micro_feature = (0..49)
+        .map(|n| &no_1000ms[n * 320..(n * 320) + 480])
         .map(|audio_slice| micro_speech_frontend(&mut frontend, audio_slice))
-        .collect_vec();
+        .fold(vec![], |mut acc: Vec<u8>, slice| {
+            acc.extend(&slice[..]);
+            acc
+        });
 
-    for n in 0..48 {
-        // Collect 49 elements from a Vec<[u8; 40]> into a Vec<u8>
-        let micro_feature = micro_feature_slices[n..n + 49].into_iter().fold(
-            vec![],
-            |mut acc: Vec<u8>, slice| {
-                acc.extend(&slice[..]);
-                acc
-            },
-        );
+    assert_eq!(micro_feature.len(), 1960);
 
-        assert_eq!(micro_feature.len(), 1960);
+    // Invoke interpreter
+    interpreter.input(0, &micro_feature).unwrap();
+    interpreter.invoke().unwrap();
 
-        // Invoke interpreter
-        interpreter.input(0, &micro_feature).unwrap();
-        interpreter.invoke().unwrap();
+    // Get the output tensor
+    let output = interpreter.output(0);
+    assert_eq!([1, 4], output.tensor_info().dims);
 
-        // Get the output tensor
-        let output = interpreter.output(0);
-        assert_eq!([1, 4], output.tensor_info().dims);
+    info!("{:?}", output.tensor_data::<u8>());
 
-        info!("{:?}", output.tensor_data::<u8>());
-
-        // Count the number of `yes` values
-        let max_index =
-            output.tensor_data::<u8>().iter().position_max().unwrap();
-        if max_index == 2 && output.tensor_data::<u8>()[2] >= 220 {
-            yes_count += 1;
-        }
-
-        // Count the number of `no` values
-        let max_index =
-            output.tensor_data::<u8>().iter().position_max().unwrap();
-        if max_index == 3 && output.tensor_data::<u8>()[3] >= 220 {
-            no_count += 1;
-        }
-    }
-
-    info!("Counted {} 'no' tensors", no_count);
-    assert!(no_count > 10);
-    assert_eq!(yes_count, 0, "Counted a 'yes' during the 'no' example");
+    // Result must be 'no'
+    assert_eq!(Some(3), output.tensor_data::<u8>().iter().position_max());
+    assert!(output.tensor_data::<u8>()[3] > 220);
 
     info!("---- Done");
 }
