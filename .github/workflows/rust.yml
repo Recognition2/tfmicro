@@ -21,17 +21,17 @@ jobs:
         uses: actions/cache@v1
         with:
           path: ~/.cargo/registry
-          key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.toml') }}
+          key: ${{ runner.os }}-registry-ctoml-${{ hashFiles('**/Cargo.toml') }}
       - name: Cache cargo index
         uses: actions/cache@v1
         with:
           path: ~/.cargo/git
-          key: ${{ runner.os }}-cargo-index-${{ hashFiles('**/Cargo.toml') }}
+          key: ${{ runner.os }}-index-ctoml-${{ hashFiles('**/Cargo.toml') }}
       - name: Cache cargo build
         uses: actions/cache@v1
         with:
           path: target
-          key: ${{ runner.os }}-cargo-build-target-${{ env.TF_HASH }}-${{ hashFiles('**/build.rs') }}
+          key: ${{ runner.os }}-dev-target-tf-${{ env.TF_HASH }}-bd-${{ hashFiles('**/build.rs') }}-hpp-${{ hashFiles('**/tflite_wrapper.hpp') }}
       - uses: actions-rs/toolchain@master
         with:
           toolchain: nightly
@@ -60,17 +60,17 @@ jobs:
         uses: actions/cache@v1
         with:
           path: ~/.cargo/registry
-          key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.toml') }}
+          key: ${{ runner.os }}-registry-ctoml-${{ hashFiles('**/Cargo.toml') }}
       - name: Cache cargo index
         uses: actions/cache@v1
         with:
           path: ~/.cargo/git
-          key: ${{ runner.os }}-cargo-index-${{ hashFiles('**/Cargo.toml') }}
+          key: ${{ runner.os }}-index-ctoml-${{ hashFiles('**/Cargo.toml') }}
       - name: Cache cargo build
         uses: actions/cache@v1
         with:
           path: target
-          key: ${{ runner.os }}-cargo-build-target-${{ env.TF_HASH }}-${{ hashFiles('**/build.rs') }}
+          key: ${{ runner.os }}-release-target-tf-${{ env.TF_HASH }}-bd-${{ hashFiles('**/build.rs') }}-hpp-${{ hashFiles('**/tflite_wrapper.hpp') }}
       - uses: actions-rs/toolchain@master
         with:
           toolchain: nightly
@@ -98,17 +98,17 @@ jobs:
         uses: actions/cache@v1
         with:
           path: ~/.cargo/registry
-          key: ${{ runner.os }}-cargo-registry-${{ hashFiles('**/Cargo.toml') }}
+          key: ${{ runner.os }}-registry-ctoml-${{ hashFiles('**/Cargo.toml') }}
       - name: Cache cargo index
         uses: actions/cache@v1
         with:
           path: ~/.cargo/git
-          key: ${{ runner.os }}-cargo-index-${{ hashFiles('**/Cargo.toml') }}
+          key: ${{ runner.os }}-index-ctoml-${{ hashFiles('**/Cargo.toml') }}
       - name: Cache cargo build
         uses: actions/cache@v1
         with:
           path: target
-          key: ${{ runner.os }}-cargo-build-target-${{ env.TF_HASH }}-${{ hashFiles('**/build.rs') }}
+          key: ${{ runner.os }}-clippy-target-tf-${{ env.TF_HASH }}-bd-${{ hashFiles('**/build.rs') }}-hpp-${{ hashFiles('**/tflite_wrapper.hpp') }}
       - uses: actions-rs/toolchain@master
         with:
           toolchain: nightly
