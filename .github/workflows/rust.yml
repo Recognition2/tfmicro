@@ -104,7 +104,6 @@ jobs:
           path: target
           key: ${{ runner.os }}-cargo-build-target-${{ hashFiles('**/Cargo.lock') }}
       - uses: actions-rs/toolchain@master
-      - uses: actions-rs/toolchain@v1
         with:
           toolchain: nightly
           override: true
