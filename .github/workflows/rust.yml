@@ -15,7 +15,8 @@ jobs:
           echo "Using tensorflow hash:  $(git submodule status | awk '{print $1}')"
           echo "::set-env name=TF_HASH::$(git submodule status | awk '{print $1}')"
           cd submodules/tensorflow
-          BUILD_TYPE=debug sudo make -f tensorflow/lite/micro/tools/make/Makefile test_magic_wand_test
+          export BUILD_TYPE=debug
+          sudo -E make -f tensorflow/lite/micro/tools/make/Makefile test_magic_wand_test
           sudo chmod a+rwx -R .
       - name: Cache cargo registry
         uses: actions/cache@v1
@@ -54,7 +55,8 @@ jobs:
           echo "Using tensorflow hash:  $(git submodule status | awk '{print $1}')"
           echo "::set-env name=TF_HASH::$(git submodule status | awk '{print $1}')"
           cd submodules/tensorflow
-          BUILD_TYPE=debug sudo make -f tensorflow/lite/micro/tools/make/Makefile test_magic_wand_test
+          export BUILD_TYPE=debug
+          sudo -E make -f tensorflow/lite/micro/tools/make/Makefile test_magic_wand_test
           sudo chmod a+rwx -R .
       - name: Cache cargo registry
         uses: actions/cache@v1
@@ -92,7 +94,8 @@ jobs:
           echo "Using tensorflow hash:  $(git submodule status | awk '{print $1}')"
           echo "::set-env name=TF_HASH::$(git submodule status | awk '{print $1}')"
           cd submodules/tensorflow
-          BUILD_TYPE=debug sudo make -f tensorflow/lite/micro/tools/make/Makefile test_magic_wand_test
+          export BUILD_TYPE=debug
+          sudo -E make -f tensorflow/lite/micro/tools/make/Makefile test_magic_wand_test
           sudo chmod a+rwx -R .
       - name: Cache cargo registry
         uses: actions/cache@v1
