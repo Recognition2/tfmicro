@@ -90,3 +90,5 @@ pub mod tensor;
 
 pub use micro_interpreter::MicroInterpreter;
 pub use micro_op_resolver::{AllOpResolver, MutableOpResolver};
+
+pub mod frontend;

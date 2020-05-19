@@ -31,16 +31,17 @@ def convert_cc_to_tflite_float(name, path):
     with open(f"examples/models/{name}", "wb") as output_file:
         output_file.write(output_data)
 
-def convert_cc_to_tflite_decimal(name, path):
+def convert_cc_to_tflite_decimal(name, path, pack_format = "B"):
     output_data = bytearray()
     with open(f"submodules/tensorflow/tensorflow/lite/micro/{path}", "r") as file:
         for line in file:
-            values_match = re.match(r"\W*([0-9, ]+).*", line)
+            values_match = re.match(r"([0-9,\- ]+)", line)
             if values_match:
                 list_text = values_match.group(1)
                 values_text = filter(None, list_text.split(","))
                 values = [int(x, base=10) for x in values_text if len(x.strip())]
-                output_data.extend(values)
+
+                [output_data.extend(struct.pack(pack_format, v)) for v in values]
     with open(f"examples/models/{name}", "wb") as output_file:
         output_file.write(output_data)
 
@@ -72,6 +73,18 @@ convert_cc_to_tflite_decimal(
 convert_cc_to_tflite_decimal(
     "yes_micro_f2e59fea_nohash_1.data",
     "examples/micro_speech/micro_features/yes_micro_features_data.cc",
+)
+
+# micro_speech audio samples
+convert_cc_to_tflite_decimal(
+    "yes_1000ms_sample.data",
+    "examples/micro_speech/yes_1000ms_sample_data.cc",
+    "<h"
+)
+convert_cc_to_tflite_decimal(
+    "no_1000ms_sample.data",
+    "examples/micro_speech/no_1000ms_sample_data.cc",
+    "<h"
 )
 
 # person_greyscale
