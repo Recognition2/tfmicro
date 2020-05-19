@@ -89,6 +89,8 @@ fn get_files_glob(path: PathBuf) -> Vec<String> {
         .into_iter()
         .filter(|p| !p.contains("test.cc"))
         .filter(|p| !p.contains("debug_log.cc"))
+        .filter(|p| !p.contains("frontend_memmap"))
+        .filter(|p| !p.contains("frontend_main"))
         .collect()
 }
 
@@ -187,6 +189,7 @@ fn cc_tensorflow_library() {
     if !tf_lib_name.exists() || cfg!(feature = "build") {
         println!("Building tensorflow micro");
         let target = env::var("TARGET").unwrap_or("".to_string());
+        let tfmicro_mdir = tflite.join("lite/micro/tools/make/");
         let start = Instant::now();
 
         let mut builder = cc::Build::new();
@@ -194,19 +197,21 @@ fn cc_tensorflow_library() {
             .cpp(true)
             .tensorflow_build_setup()
             .cpp_link_stdlib(None)
+            //
             .include(tflite.parent().unwrap())
-            .include(tflite.join("lite/micro/tools/make/downloads"))
-            .include(tflite.join("lite/micro/tools/make/downloads/gemmlowp"))
-            .include(
-                tflite.join(
-                    "lite/micro/tools/make/downloads/flatbuffers/include",
-                ),
-            )
-            .include(tflite.join("lite/micro/tools/make/downloads/ruy"))
-            .files(get_files_glob(tflite.join("lite/micro/*.cc")))
-            .files(get_files_glob(tflite.join("lite/micro/kernels/*.cc")))
-            .files(get_files_glob(
+            .include(tfmicro_mdir.join("downloads"))
+            .include(tfmicro_mdir.join("downloads/gemmlowp"))
+            .include(tfmicro_mdir.join("downloads/flatbuffers/include"))
+            .include(tfmicro_mdir.join("downloads/ruy"))
+            //
+            .files(get_cc_files_glob(tflite.join("lite/micro/*.cc")))
+            .files(get_cc_files_glob(tflite.join("lite/micro/kernels/*.cc")))
+            .files(get_cc_files_glob(
+
                 tflite.join("lite/micro/memory_planner/*.cc"),
+            ))
+            .files(get_cc_files_glob(
+                tflite.join("lite/experimental/microfrontend/lib/*.c"),
             ))
             .file(tflite.join("lite/c/common.c"))
             .file(tflite.join("lite/core/api/error_reporter.cc"))
@@ -231,6 +236,17 @@ fn cc_tensorflow_library() {
                 .include(cmsis.join("CMSIS/DSP/Include"))
                 .include(cmsis.join("CMSIS/Core/Include"));
         }
+
+        // micro frontend
+        builder_ref
+            .include(tfmicro_mdir.join("downloads/kissfft"))
+            .include(tfmicro_mdir.join("downloads/kissfft/tools"))
+            .include(tflite.join("lite/experimental/microfrontend/lib"))
+            .files(get_cc_files_glob(
+                tflite.join("lite/experimental/microfrontend/lib/*.cc"),
+            ))
+            .file(tfmicro_mdir.join("downloads/kissfft/kiss_fft.c"))
+            .file(tfmicro_mdir.join("downloads/kissfft/tools/kiss_fftr.c"));
 
         // Compile
         builder_ref.compile("tensorflow-microlite");
@@ -341,6 +357,9 @@ fn bindgen_tflite_types() {
             .whitelist_type("tflite::MicroMutableOpResolver")
             .opaque_type("tflite::MicroMutableOpResolver")
             .whitelist_type("TfLiteTensor")
+            .whitelist_type("FrontendState")
+            .whitelist_type("FrontendConfig")
+            .whitelist_type("FrontendOutput")
             // Types - blacklist
             .blacklist_type("std")
             .blacklist_type("tflite::Interpreter_TfLiteDelegatePtr")
