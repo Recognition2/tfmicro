@@ -204,13 +204,12 @@ fn cc_tensorflow_library() {
             .include(tfmicro_mdir.join("downloads/flatbuffers/include"))
             .include(tfmicro_mdir.join("downloads/ruy"))
             //
-            .files(get_cc_files_glob(tflite.join("lite/micro/*.cc")))
-            .files(get_cc_files_glob(tflite.join("lite/micro/kernels/*.cc")))
-            .files(get_cc_files_glob(
-
+            .files(get_files_glob(tflite.join("lite/micro/*.cc")))
+            .files(get_files_glob(tflite.join("lite/micro/kernels/*.cc")))
+            .files(get_files_glob(
                 tflite.join("lite/micro/memory_planner/*.cc"),
             ))
-            .files(get_cc_files_glob(
+            .files(get_files_glob(
                 tflite.join("lite/experimental/microfrontend/lib/*.c"),
             ))
             .file(tflite.join("lite/c/common.c"))
@@ -242,7 +241,7 @@ fn cc_tensorflow_library() {
             .include(tfmicro_mdir.join("downloads/kissfft"))
             .include(tfmicro_mdir.join("downloads/kissfft/tools"))
             .include(tflite.join("lite/experimental/microfrontend/lib"))
-            .files(get_cc_files_glob(
+            .files(get_files_glob(
                 tflite.join("lite/experimental/microfrontend/lib/*.cc"),
             ))
             .file(tfmicro_mdir.join("downloads/kissfft/kiss_fft.c"))
