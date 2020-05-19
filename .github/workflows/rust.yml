@@ -1,37 +1,123 @@
 name: Rust
 
-on:
-  push:
-    branches: [ master ]
-  pull_request:
-    branches: [ master ]
+on: [push, pull_request]
 
 jobs:
-  build:
-
-    runs-on: ubuntu-latest
-
-    steps:
-    - uses: actions/checkout@v2
-    - name: Build
-      run: |
-        cargo build --verbose --all-targets
-        cargo build --release --verbose --all-targets
-    - name: Run tests
-      run: |
-        cargo test --verbose
-        cargo test --verbose --release
-        
-  clippy_check:
+  build-dev:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v1
-      - uses: actions-rs/toolchain@v1
+      - uses: actions/checkout@v2
+      - uses: textbook/git-checkout-submodule-action@2.1.1
+      - uses: docker://gcc
+      - name: Build tensorflow
+        run: |
+          sudo apt-get update -qq >/dev/null 2>&1 && sudo apt-get install -yqq xxd git
+          echo "Using tensorflow hash:  $(git submodule status | awk '{print $1}')"
+          echo "::set-env name=TF_HASH::$(git submodule status | awk '{print $1}')"
+          cd submodules/tensorflow
+          export BUILD_TYPE=debug
+          sudo -E make -f tensorflow/lite/micro/tools/make/Makefile test_magic_wand_test
+          sudo chmod a+rwx -R .
+      - name: Cache cargo registry
+        uses: actions/cache@v1
         with:
-            toolchain: nightly
-            components: clippy
-            override: true
+          path: ~/.cargo/registry
+          key: ${{ runner.os }}-registry-ctoml-${{ hashFiles('**/Cargo.toml') }}
+      - name: Cache cargo index
+        uses: actions/cache@v1
+        with:
+          path: ~/.cargo/git
+          key: ${{ runner.os }}-index-ctoml-${{ hashFiles('**/Cargo.toml') }}
+      - name: Cache cargo build
+        uses: actions/cache@v1
+        with:
+          path: target
+          key: ${{ runner.os }}-dev-target-tf-${{ env.TF_HASH }}-bd-${{ hashFiles('**/build.rs') }}-hpp-${{ hashFiles('**/tflite_wrapper.hpp') }}
+      - uses: actions-rs/toolchain@master
+        with:
+          toolchain: nightly
+          override: true
+          components: rustfmt, clippy
+      - name: Build
+        run: |
+          cargo build --verbose --all-targets --features=no-c-warnings
+          cargo test --verbose  --all-targets --features=no-c-warnings
+
+  build-release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: textbook/git-checkout-submodule-action@2.1.1
+      - uses: docker://gcc
+      - name: Build tensorflow
+        run: |
+          sudo apt-get update -qq >/dev/null 2>&1 && sudo apt-get install -yqq xxd git
+          echo "Using tensorflow hash:  $(git submodule status | awk '{print $1}')"
+          echo "::set-env name=TF_HASH::$(git submodule status | awk '{print $1}')"
+          cd submodules/tensorflow
+          export BUILD_TYPE=debug
+          sudo -E make -f tensorflow/lite/micro/tools/make/Makefile test_magic_wand_test
+          sudo chmod a+rwx -R .
+      - name: Cache cargo registry
+        uses: actions/cache@v1
+        with:
+          path: ~/.cargo/registry
+          key: ${{ runner.os }}-registry-ctoml-${{ hashFiles('**/Cargo.toml') }}
+      - name: Cache cargo index
+        uses: actions/cache@v1
+        with:
+          path: ~/.cargo/git
+          key: ${{ runner.os }}-index-ctoml-${{ hashFiles('**/Cargo.toml') }}
+      - name: Cache cargo build
+        uses: actions/cache@v1
+        with:
+          path: target
+          key: ${{ runner.os }}-release-target-tf-${{ env.TF_HASH }}-bd-${{ hashFiles('**/build.rs') }}-hpp-${{ hashFiles('**/tflite_wrapper.hpp') }}
+      - uses: actions-rs/toolchain@master
+        with:
+          toolchain: nightly
+          override: true
+          components: rustfmt, clippy
+      - name: Build
+        run: |
+          cargo build --release --verbose --all-targets --features=no-c-warnings
+          cargo test --release --verbose  --all-targets --features=no-c-warnings
+  clippy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: textbook/git-checkout-submodule-action@2.1.1
+      - uses: docker://gcc
+      - name: Build tensorflow
+        run: |
+          sudo apt-get update -qq >/dev/null 2>&1 && sudo apt-get install -yqq xxd git
+          echo "Using tensorflow hash:  $(git submodule status | awk '{print $1}')"
+          echo "::set-env name=TF_HASH::$(git submodule status | awk '{print $1}')"
+          cd submodules/tensorflow
+          export BUILD_TYPE=debug
+          sudo -E make -f tensorflow/lite/micro/tools/make/Makefile test_magic_wand_test
+          sudo chmod a+rwx -R .
+      - name: Cache cargo registry
+        uses: actions/cache@v1
+        with:
+          path: ~/.cargo/registry
+          key: ${{ runner.os }}-registry-ctoml-${{ hashFiles('**/Cargo.toml') }}
+      - name: Cache cargo index
+        uses: actions/cache@v1
+        with:
+          path: ~/.cargo/git
+          key: ${{ runner.os }}-index-ctoml-${{ hashFiles('**/Cargo.toml') }}
+      - name: Cache cargo build
+        uses: actions/cache@v1
+        with:
+          path: target
+          key: ${{ runner.os }}-clippy-target-tf-${{ env.TF_HASH }}-bd-${{ hashFiles('**/build.rs') }}-hpp-${{ hashFiles('**/tflite_wrapper.hpp') }}
+      - uses: actions-rs/toolchain@master
+        with:
+          toolchain: nightly
+          override: true
+          components: clippy
       - uses: actions-rs/clippy-check@v1
         with:
-          token: ${{ secrets.TOKEN }}
-          args: --all-features
+          token: ${{ secrets.GITHUB_TOKEN }}
+          args: --all-features --all-targets  -- -D clippy::all
