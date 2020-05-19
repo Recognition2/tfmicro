@@ -63,6 +63,9 @@ fn prepare_tensorflow_source() -> PathBuf {
     };
 
     if !tf_src_dir.exists() {
+        // Copy directory
+        println!("Copying TF from {:?}", submodules.join("tensorflow"));
+        println!("Copying TF to {:?}", out_dir);
         fs_extra::dir::copy(submodules.join("tensorflow"), &out_dir, &copy_dir)
             .expect("Unable to copy tensorflow");
     }
@@ -74,7 +77,7 @@ fn prepare_tensorflow_source() -> PathBuf {
 
 /// Return a Vec of all *.cc files in `path`, excluding those that have a
 /// name containing 'test.cc'
-fn get_cc_files_glob(path: PathBuf) -> Vec<String> {
+fn get_files_glob(path: PathBuf) -> Vec<String> {
     let mut paths: Vec<String> = vec![];
 
     for entry in glob(&path.to_string_lossy()).unwrap() {
@@ -185,6 +188,7 @@ fn cc_tensorflow_library() {
 
     if !tf_lib_name.exists() || cfg!(feature = "build") {
         println!("Building tensorflow micro");
+        let target = env::var("TARGET").unwrap_or("".to_string());
         let tfmicro_mdir = tflite.join("lite/micro/tools/make/");
         let start = Instant::now();
 
@@ -203,6 +207,7 @@ fn cc_tensorflow_library() {
             .files(get_cc_files_glob(tflite.join("lite/micro/*.cc")))
             .files(get_cc_files_glob(tflite.join("lite/micro/kernels/*.cc")))
             .files(get_cc_files_glob(
+
                 tflite.join("lite/micro/memory_planner/*.cc"),
             ))
             .files(get_cc_files_glob(
@@ -216,6 +221,21 @@ fn cc_tensorflow_library() {
             .file(tflite.join("lite/kernels/internal/quantization_util.cc"))
             .file(tflite.join("lite/kernels/kernel_util.cc"))
             .file(tflite.join("lite/micro/testing/test_utils.cc"));
+
+        // CMSIS-NN for ARM Cortex-M targets
+        if target.starts_with("thumb")
+            && target.contains("m-none-")
+            && cfg!(feature = "cmsis-nn")
+        {
+            println!("Build includes CMSIS-NN.");
+            let cmsis = tflite.join("lite/micro/tools/make/downloads/cmsis");
+
+            builder_ref
+                .files(get_files_glob(cmsis.join("CMSIS/NN/Source/*.c")))
+                .include(cmsis.join("CMSIS/NN/Include"))
+                .include(cmsis.join("CMSIS/DSP/Include"))
+                .include(cmsis.join("CMSIS/Core/Include"));
+        }
 
         // micro frontend
         builder_ref
