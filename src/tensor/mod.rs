@@ -3,15 +3,12 @@
 use core::convert::{TryFrom, TryInto};
 use core::mem::size_of;
 use core::slice;
-use cty::c_int;
 use ordered_float::NotNan;
 
 use crate::bindings;
 
 mod info;
 pub use info::TensorInfo;
-
-pub type TensorIndex = c_int;
 
 /// A TensorFlow Tensor
 #[repr(transparent)]

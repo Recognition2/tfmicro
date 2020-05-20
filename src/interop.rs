@@ -6,6 +6,7 @@ mod tensorflow {
     use core::slice;
     use core::str;
 
+    #[allow(clippy::empty_loop)]
     #[no_mangle]
     // __cxa_pure_virtual is a function, address of which compiler writes
     // in the virtual table when the function is pure virtual. It may be
@@ -17,6 +18,7 @@ mod tensorflow {
         loop {}
     }
 
+    #[allow(clippy::empty_loop)]
     #[no_mangle]
     // A cleanup must return control to the unwinding code by tail calling
     // __cxa_end_cleanup. The routine performs whatever housekeeping is
