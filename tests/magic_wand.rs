@@ -1,11 +1,10 @@
-extern crate itertools;
+//! magic_wand example
+//!
+use tfmicro::{MicroInterpreter, Model, MutableOpResolver};
+
 use itertools::Itertools;
 use log::info;
 use ordered_float::NotNan;
-use tfmicro::{
-    micro_interpreter::MicroInterpreter, micro_op_resolver::MutableOpResolver,
-    model::Model,
-};
 
 #[test]
 fn magic_wand() {

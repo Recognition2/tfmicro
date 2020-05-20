@@ -1,13 +1,8 @@
 //! micro_speech example, from audio files
 
-extern crate itertools;
+use tfmicro::{Frontend, MicroInterpreter, Model, MutableOpResolver};
+
 use itertools::Itertools;
-
-use tfmicro::{
-    frontend::Frontend, micro_interpreter::MicroInterpreter,
-    micro_op_resolver::MutableOpResolver, model::Model,
-};
-
 use log::info;
 
 /// Returns 40 elements of micro_feature from an audio slice
