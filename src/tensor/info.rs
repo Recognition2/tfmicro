@@ -27,12 +27,9 @@ impl<'a> From<&'a bindings::TfLiteTensor> for TensorInfo<'a> {
     fn from(t: &'a bindings::TfLiteTensor) -> Self {
         Self {
             element_type: t.type_.try_into().unwrap(),
-            dims: {
-                let slice = unsafe {
-                    let dims = &*t.dims;
-                    dims.data.as_slice(dims.size as usize)
-                };
-                slice
+            dims: unsafe {
+                let dims = &*t.dims;
+                dims.data.as_slice(dims.size as usize)
             },
         }
     }

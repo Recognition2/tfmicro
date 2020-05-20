@@ -100,7 +100,7 @@ trait CompilationBuilder {
 
     /// Build flags for tensorflow micro sources
     fn tensorflow_build_setup(&mut self) -> &mut Self {
-        let target = env::var("TARGET").unwrap_or("".to_string());
+        let target = env::var("TARGET").unwrap_or_else(|_| "".to_string());
 
         let build = self
             .flag("-fno-rtti") // No Runtime type information
@@ -167,7 +167,7 @@ fn cc_tensorflow_library() {
     let tflite = prepare_tensorflow_source();
     let out_dir = env::var("OUT_DIR").unwrap();
     let tf_lib_name =
-        Path::new(&out_dir).join(format!("libtensorflow-microlite.a"));
+        Path::new(&out_dir).join("libtensorflow-microlite.a".to_string());
 
     if is_cross_compiling().unwrap() {
         // Find include directory used by the crosscompiler for libm
@@ -188,7 +188,7 @@ fn cc_tensorflow_library() {
 
     if !tf_lib_name.exists() || cfg!(feature = "build") {
         println!("Building tensorflow micro");
-        let target = env::var("TARGET").unwrap_or("".to_string());
+        let target = env::var("TARGET").unwrap_or_else(|_| "".to_string());
         let tfmicro_mdir = tflite.join("lite/micro/tools/make/");
         let start = Instant::now();
 

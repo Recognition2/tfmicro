@@ -89,7 +89,7 @@ impl Tensor {
     }
 
     /// Return a TensorInfo that lives as long as this Tensor
-    pub fn tensor_info<'a>(&'a self) -> TensorInfo<'a> {
+    pub fn tensor_info(&self) -> TensorInfo {
         self.inner().into()
     }
 
@@ -136,6 +136,7 @@ impl Tensor {
 
 #[cfg(test)]
 mod tests {
+    #[allow(unused)]
     use super::*;
 
     #[test]

@@ -23,7 +23,7 @@ impl Model {
     /// # Errors
     ///
     /// Returns `Error::InvalidModel` if the buffer failed verification
-    pub fn from_buffer<'a>(buffer: &'a [u8]) -> Result<&'a Self, Error> {
+    pub fn from_buffer(buffer: &[u8]) -> Result<&Self, Error> {
         let len = buffer.len();
         let buffer = buffer.as_ptr();
 
@@ -63,8 +63,7 @@ mod tests {
     #[test]
     #[should_panic]
     fn bad_model_from_buffer() {
-        let model =
-            include_bytes!("../examples/models/hello_world.tflite").clone();
+        let model = &include_bytes!("../examples/models/hello_world.tflite");
 
         let _ = Model::from_buffer(&model[..88]).unwrap();
         //                                  ^^

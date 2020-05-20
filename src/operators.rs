@@ -564,6 +564,7 @@ impl MutableOpResolver {
 
         self
     }
+    #[allow(clippy::should_implement_trait)]
     /// Use the NEG operator in this op resolver
     pub fn neg(mut self) -> Self {
         self.check_then_inc_len();

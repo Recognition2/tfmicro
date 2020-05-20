@@ -71,6 +71,11 @@ impl MutableOpResolver {
         self.len
     }
 
+    /// Return whether there are zero operators
+    pub fn is_empty(&self) -> bool {
+        self.len == 0
+    }
+
     /// Create a new MutableOpResolver, initially empty
     pub fn empty() -> Self {
         // Get the maximum number of registrations

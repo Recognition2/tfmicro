@@ -136,7 +136,7 @@ impl<'a> MicroInterpreter<'a> {
             // Initialise MicroErrorReporter. We assume that `new` is a pure
             // function that only fills in the MicroErrorReporter vtable
             let micro_error_reporter = MicroErrorReporter::new();
-            *&mut ERROR_REPORTER = MaybeUninit::new(micro_error_reporter);
+            ERROR_REPORTER = MaybeUninit::new(micro_error_reporter);
 
             &ERROR_REPORTER // return reference with 'static lifetime
         };
@@ -238,11 +238,8 @@ impl<'a> MicroInterpreter<'a> {
             // From bindgen type to Rust type
             inp.into()
         };
-        let tensor_len = input_tensor
-            .tensor_info()
-            .dims
-            .iter()
-            .fold(1_i32, |acc, &el| acc * el);
+        let tensor_len =
+            input_tensor.tensor_info().dims.iter().product::<i32>();
         if tensor_len != data.len().try_into().unwrap() {
             Err(Error::InputDataLenMismatch)
         } else {
