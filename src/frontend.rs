@@ -18,6 +18,10 @@ cpp! {{
 
 pub struct Frontend(bindings::FrontendState);
 
+// Frontend allocates memory on the heap, therefore the raw pointers that
+// in contains are Send
+unsafe impl Send for Frontend {}
+
 impl Frontend {
     /// Create new frontend state
     pub fn new() -> Result<Self, ()> {
