@@ -40,8 +40,8 @@ jobs:
           components: rustfmt, clippy
       - name: Build
         run: |
-          cargo build --verbose --all-targets --features=no-c-warnings
-          cargo test --verbose  --all-targets --features=no-c-warnings
+          cargo build --verbose --features=no-c-warnings
+          cargo test --verbose  --features=no-c-warnings
 
   build-release:
     runs-on: ubuntu-latest
@@ -80,8 +80,8 @@ jobs:
           components: rustfmt, clippy
       - name: Build
         run: |
-          cargo build --release --verbose --all-targets --features=no-c-warnings
-          cargo test --release --verbose  --all-targets --features=no-c-warnings
+          cargo build --release --verbose --features=no-c-warnings
+          cargo test --release --verbose  --features=no-c-warnings
   clippy:
     runs-on: ubuntu-latest
     steps:
