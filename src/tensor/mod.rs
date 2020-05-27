@@ -88,16 +88,17 @@ impl Tensor {
         self.0.type_.try_into().ok()
     }
 
-    /// A [`TensorInfo`](crate::tensor::TensorInfo) that describes this tensor
+    /// Returns a [`TensorInfo`](crate::tensor::TensorInfo) that describes this tensor
     ///
     /// # Panics
     ///
-    /// Panics if the underlying tensor cannot be represented by a TensorInfo.
+    /// Panics if the underlying tensor cannot be represented by a
+    /// [`TensorInfo`](crate::tensor::TensorInfo).
     pub fn info(&self) -> TensorInfo {
         self.inner().try_into().unwrap()
     }
 
-    fn inner(&self) -> &bindings::TfLiteTensor {
+    pub(crate) fn inner(&self) -> &bindings::TfLiteTensor {
         &self.0
     }
 

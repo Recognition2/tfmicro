@@ -1,4 +1,8 @@
-//! Micro interpreter
+//! A wrapper around the Tensorflow `MicroInterpreter`. Much like in the C
+//! API, this type takes a model, a set of working memory and the input
+//! tensors. It is then used to access the output tensors.
+//!
+//! See [`MicroInterpreter`](MicroInterpreter).
 //!
 //! # Usage
 //!
@@ -54,7 +58,7 @@
 //! }; // Error [model, ..] dropped here whilst still borrowed
 //!
 //! // interpreter used here
-//! # interpreter.input(0);
+//! interpreter.input_info(0);
 //! ```
 
 use core::convert::TryInto;
@@ -194,7 +198,14 @@ impl<'a> MicroInterpreter<'a> {
         })
     }
 
-    pub fn input_tensor_info(&self, n: usize) -> TensorInfo {
+    /// Returns a [`TensorInfo`](crate::tensor::TensorInfo) that describes
+    /// the `n`th input tensor.
+    ///
+    /// # Panics
+    ///
+    /// Panics if the underlying tensor cannot be represented by a
+    /// [`TensorInfo`](crate::tensor::TensorInfo).
+    pub fn input_info(&self, n: usize) -> TensorInfo {
         let interpreter = &self.micro_interpreter;
         let input_tensor: &'a Tensor = unsafe {
             // Call method on micro_interpreter
@@ -212,11 +223,20 @@ impl<'a> MicroInterpreter<'a> {
             // From bindgen type to Rust type
             inp.into()
         };
+
+        // Panics if tensor cannot be repesented (eg. unimplemented type)
         input_tensor.info()
     }
 
-    /// Returns a mutable reference to the nth input tensor
+    /// Copies data into the `n`th input tensor.
     ///
+    /// # Errors
+    ///
+    /// Returns `Error::InputDataLenMismatch` if the length of slice `data`
+    /// does not match the flat length of the `n`th input tensor.
+    ///
+    /// Returns an Error if the underlying tensor cannot be represented by a
+    /// [`TensorInfo`](crate::tensor::TensorInfo).
     pub fn input<T: ElemTypeOf + core::clone::Clone>(
         &mut self,
         n: usize,
@@ -238,7 +258,13 @@ impl<'a> MicroInterpreter<'a> {
             // From bindgen type to Rust type
             inp.into()
         };
-        let tensor_len = input_tensor.info().dims.iter().product::<i32>();
+
+        // Returns Err if tensor cannot be repesented (eg. unimplemented
+        // type)
+        let tensor_info: TensorInfo = input_tensor.inner().try_into()?;
+
+        // Length is the product of all dimensions
+        let tensor_len = tensor_info.dims.iter().product::<i32>();
 
         if tensor_len != data.len().try_into().unwrap() {
             Err(Error::InputDataLenMismatch)
@@ -248,8 +274,8 @@ impl<'a> MicroInterpreter<'a> {
         }
     }
 
-    /// Invoke runs the Tensorflow operation to transform inputs to outputs
-    ///
+    /// Runs the Tensorflow operation to transform input tensors to output
+    /// tensors
     pub fn invoke(&mut self) -> Result<(), Status> {
         let interpreter = &self.micro_interpreter;
 
@@ -305,6 +331,7 @@ impl<'a> MicroInterpreter<'a> {
 mod tests {
     use super::*;
     use crate::micro_op_resolver::AllOpResolver;
+    use crate::tensor::ElementType;
 
     #[test]
     fn new_interpreter_static_arena() {
@@ -348,5 +375,33 @@ mod tests {
 
         let _ = MicroInterpreter::new(&model, all_op_resolver, tensor_arena)
             .unwrap();
+    }
+
+    #[test]
+    fn input_info() {
+        // model
+        let model = include_bytes!("../examples/models/hello_world.tflite");
+        let model = Model::from_buffer(&model[..]).unwrap();
+
+        // resolver
+        let all_op_resolver = AllOpResolver::new();
+
+        // arena
+        const TENSOR_ARENA_SIZE: usize = 4 * 1024;
+        let mut tensor_arena: [u8; TENSOR_ARENA_SIZE] = [0; TENSOR_ARENA_SIZE];
+
+        let interpreter = MicroInterpreter::new(
+            &model,
+            all_op_resolver,
+            &mut tensor_arena[..],
+        )
+        .unwrap();
+
+        let info = interpreter.input_info(0);
+
+        // input tensor properties for hello_world example
+        assert_eq!(info.name, "dense_2_input");
+        assert_eq!(info.element_type, ElementType::Float32);
+        assert_eq!(info.dims, [1, 1]);
     }
 }

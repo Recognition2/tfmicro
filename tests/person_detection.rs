@@ -43,7 +43,7 @@ fn person_detection() {
 
     // Check properties of the input sensor
     interpreter.input(0, person).unwrap();
-    assert_eq!([1, 96, 96, 1], interpreter.input_tensor_info(0).dims);
+    assert_eq!([1, 96, 96, 1], interpreter.input_info(0).dims);
 
     info!("Created setup");
 

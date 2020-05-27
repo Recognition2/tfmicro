@@ -39,7 +39,7 @@ fn micro_speech() {
             .unwrap();
 
     // Check properties of the input sensor
-    assert_eq!([1, 49, 40, 1], interpreter.input_tensor_info(0).dims);
+    assert_eq!([1, 49, 40, 1], interpreter.input_info(0).dims);
 
     // -------- 'yes' example --------
     interpreter.input(0, yes).unwrap();

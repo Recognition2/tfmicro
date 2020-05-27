@@ -61,7 +61,7 @@ fn test_gesture(
     interpreter.input(0, data).unwrap();
     assert_eq!(
         [1, 128, 3, 1],
-        interpreter.input_tensor_info(0).dims,
+        interpreter.input_info(0).dims,
         "Dimensions of input tensor"
     );
 
