@@ -25,15 +25,12 @@ fn micro_speech() {
     let mut tensor_arena: [u8; TENSOR_ARENA_SIZE] = [0; TENSOR_ARENA_SIZE];
 
     // Pull in all needed operation implementations
-    // let operators = [
-    //     Operators::DepthwiseConv2d,
-    //     Operators::FullyConnected,
-    //     Operators::Softmax,
-    // ];
     let micro_op_resolver = MutableOpResolver::empty()
         .depthwise_conv_2d()
         .fully_connected()
         .softmax();
+
+    info!("Resolver: {:?}", micro_op_resolver);
 
     // Build an interpreter to run the model with
     let mut interpreter =
@@ -41,21 +38,21 @@ fn micro_speech() {
             .unwrap();
 
     // Check properties of the input sensor
-    assert_eq!([1, 49, 40, 1], interpreter.input_tensor_info(0).dims);
+    assert_eq!([1, 49, 40, 1], interpreter.input_info(0).dims);
 
     // -------- 'yes' example --------
     interpreter.input(0, yes).unwrap();
     interpreter.invoke().unwrap();
 
     // Get output for 'yes'
-    let output = interpreter.output(0);
-    assert_eq!([1, 4], output.tensor_info().dims);
+    let output_tensor = interpreter.output(0);
+    assert_eq!([1, 4], output_tensor.info().dims);
 
-    dbg!(output.tensor_data::<u8>());
-    let silence_score: u8 = output.tensor_data()[0];
-    let unknown_score: u8 = output.tensor_data()[1];
-    let yes_score: u8 = output.tensor_data()[2];
-    let no_score: u8 = output.tensor_data()[3];
+    dbg!(output_tensor.as_data::<u8>());
+    let silence_score: u8 = output_tensor.as_data()[0];
+    let unknown_score: u8 = output_tensor.as_data()[1];
+    let yes_score: u8 = output_tensor.as_data()[2];
+    let no_score: u8 = output_tensor.as_data()[3];
 
     assert!(yes_score > silence_score);
     assert!(yes_score > unknown_score);
@@ -67,20 +64,21 @@ fn micro_speech() {
     interpreter.invoke().unwrap();
 
     // Get output for 'no'
-    let output = interpreter.output(0);
-    assert_eq!([1, 4], output.tensor_info().dims);
+    let output_tensor = interpreter.output(0);
+    assert_eq!([1, 4], output_tensor.info().dims);
 
-    dbg!(output.tensor_data::<u8>());
-    let silence_score: u8 = output.tensor_data()[0];
-    let unknown_score: u8 = output.tensor_data()[1];
-    let yes_score: u8 = output.tensor_data()[2];
-    let no_score: u8 = output.tensor_data()[3];
+    dbg!(output_tensor.as_data::<u8>());
+    let silence_score: u8 = output_tensor.as_data()[0];
+    let unknown_score: u8 = output_tensor.as_data()[1];
+    let yes_score: u8 = output_tensor.as_data()[2];
+    let no_score: u8 = output_tensor.as_data()[3];
 
     assert!(no_score > silence_score);
     assert!(no_score > unknown_score);
     assert!(no_score > yes_score);
 
     interpreter.arena_used_bytes();
+    info!("Output Info: {:?}", output_tensor.info());
 
     info!("---- Done");
 }

@@ -59,6 +59,11 @@ pub enum Error {
     InterpreterInitError,
     AllocateTensorsError,
     InputDataLenMismatch,
+    /// The element type of the underlying data is not implemented by this
+    /// library
+    ElementTypeUnimplemented,
+    /// An error occoured converting some raw string to Utf8
+    Utf8Error,
 }
 
 /// The status resulting from a TensorFlow operation
