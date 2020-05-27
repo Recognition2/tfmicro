@@ -66,7 +66,7 @@ impl ElemTypeOf for i32 {
     }
 }
 
-/// From implementations
+/// Implement From raw types to Tensor
 impl From<*mut bindings::TfLiteTensor> for &Tensor {
     fn from(t: *mut bindings::TfLiteTensor) -> Self {
         unsafe { &*(t as *mut Tensor) }
@@ -79,21 +79,35 @@ impl From<*mut bindings::TfLiteTensor> for &mut Tensor {
 }
 
 impl Tensor {
-    /// Return the element type of this tensor
-    pub fn get_type(&self) -> Option<ElementType> {
+    /// The element type of this tensor.
+    ///
+    /// Returns `Some(element_type)` if the element type annotated on this
+    /// tensor matches a member of
+    /// [ElementType](#enum.ElementType). Otherwise returns `None`.
+    pub fn element_type(&self) -> Option<ElementType> {
         self.0.type_.try_into().ok()
+    }
+
+    /// A TensorInfo that describes this tensor
+    pub fn info(&self) -> TensorInfo {
+        self.inner().into()
     }
 
     fn inner(&self) -> &bindings::TfLiteTensor {
         &self.0
     }
 
-    /// Return a TensorInfo that lives as long as this Tensor
-    pub fn tensor_info(&self) -> TensorInfo {
-        self.inner().into()
-    }
-
-    pub fn tensor_data<T>(&self) -> &[T]
+    /// Extracts the tensor's data as a flat slice.
+    ///
+    /// Call the [input](#method.input) to check the dimensionality of the
+    /// tensor.
+    ///
+    /// # Panics
+    ///
+    /// This method will panic if `T` does not match the data type
+    /// annotated on this tensor. Use the [type](#method.type) to discover
+    /// the data type.
+    pub fn as_data<T>(&self) -> &[T]
     where
         T: ElemTypeOf,
     {
@@ -114,17 +128,29 @@ impl Tensor {
         }
     }
 
-    pub fn tensor_data_mut<T>(&mut self) -> &mut [T]
+    /// Extracts the tensor's data as a mutable flat slice.
+    ///
+    /// Call the [input](#method.input) to check the dimensionality of the
+    /// tensor.
+    ///
+    /// # Panics
+    ///
+    /// This method will panic if `T` does not match the data type
+    /// annotated on this tensor. Use the [type](#method.type) to discover
+    /// the data type.
+    pub fn as_data_mut<T>(&mut self) -> &mut [T]
     where
         T: ElemTypeOf,
     {
         let tensor_info: TensorInfo = self.inner().into();
+
         assert!(
             tensor_info.element_type == T::elem_type_of(),
             "Invalid type reference of `{:?}` to the original type `{:?}`",
             T::elem_type_of(),
             tensor_info.element_type
         );
+
         unsafe {
             slice::from_raw_parts_mut(
                 self.0.data.raw as *mut T,
@@ -132,13 +158,4 @@ impl Tensor {
             )
         }
     }
-}
-
-#[cfg(test)]
-mod tests {
-    #[allow(unused)]
-    use super::*;
-
-    #[test]
-    fn test() {}
 }

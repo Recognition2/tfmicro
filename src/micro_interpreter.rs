@@ -212,7 +212,7 @@ impl<'a> MicroInterpreter<'a> {
             // From bindgen type to Rust type
             inp.into()
         };
-        input_tensor.tensor_info()
+        input_tensor.info()
     }
 
     /// Returns a mutable reference to the nth input tensor
@@ -238,12 +238,12 @@ impl<'a> MicroInterpreter<'a> {
             // From bindgen type to Rust type
             inp.into()
         };
-        let tensor_len =
-            input_tensor.tensor_info().dims.iter().product::<i32>();
+        let tensor_len = input_tensor.info().dims.iter().product::<i32>();
+
         if tensor_len != data.len().try_into().unwrap() {
             Err(Error::InputDataLenMismatch)
         } else {
-            input_tensor.tensor_data_mut().clone_from_slice(data);
+            input_tensor.as_data_mut().clone_from_slice(data);
             Ok(())
         }
     }

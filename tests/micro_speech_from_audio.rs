@@ -94,14 +94,14 @@ fn micro_speech_with_audio() {
     interpreter.invoke().unwrap();
 
     // Get the output tensor
-    let output = interpreter.output(0);
-    assert_eq!([1, 4], output.tensor_info().dims);
+    let output_tensor = interpreter.output(0);
+    assert_eq!([1, 4], output_tensor.info().dims);
 
-    info!("{:?}", output.tensor_data::<u8>());
+    info!("{:?}", output_tensor.as_data::<u8>());
 
     // Result must be 'yes'
-    assert_eq!(Some(2), output.tensor_data::<u8>().iter().position_max());
-    assert!(output.tensor_data::<u8>()[2] > 220);
+    assert_eq!(Some(2), output_tensor.as_data::<u8>().iter().position_max());
+    assert!(output_tensor.as_data::<u8>()[2] > 220);
 
     // -------- 'no' example --------
 
@@ -121,14 +121,14 @@ fn micro_speech_with_audio() {
     interpreter.invoke().unwrap();
 
     // Get the output tensor
-    let output = interpreter.output(0);
-    assert_eq!([1, 4], output.tensor_info().dims);
+    let output_tensor = interpreter.output(0);
+    assert_eq!([1, 4], output_tensor.info().dims);
 
-    info!("{:?}", output.tensor_data::<u8>());
+    info!("{:?}", output_tensor.as_data::<u8>());
 
     // Result must be 'no'
-    assert_eq!(Some(3), output.tensor_data::<u8>().iter().position_max());
-    assert!(output.tensor_data::<u8>()[3] > 220);
+    assert_eq!(Some(3), output_tensor.as_data::<u8>().iter().position_max());
+    assert!(output_tensor.as_data::<u8>()[3] > 220);
 
     info!("---- Done");
 }

@@ -42,43 +42,45 @@ fn person_detection() {
             .unwrap();
 
     // Check properties of the input sensor
-    // let input = interpreter.input(0);
     interpreter.input(0, person).unwrap();
     assert_eq!([1, 96, 96, 1], interpreter.input_tensor_info(0).dims);
 
     info!("Created setup");
 
     // -------- 'person' example ------------
-    // input.tensor_data_mut().clone_from_slice(person);
-
     interpreter.invoke().unwrap();
 
     // get output for 'person'
-    let output = interpreter.output(0);
+    let output_tensor = interpreter.output(0);
     assert_eq!(
         [1, 1, 1, 3],
-        output.tensor_info().dims,
+        output_tensor.info().dims,
         "Dimensions of output tensor"
     );
 
-    assert_eq!(1, output.tensor_data::<u8>().iter().position_max().unwrap());
+    assert_eq!(
+        1,
+        output_tensor.as_data::<u8>().iter().position_max().unwrap()
+    );
     info!("---- Person output correct!");
 
     // ------- 'no person' example ----------
     interpreter.input(0, no_person).unwrap();
-    // input.tensor_data_mut().clone_from_slice(no_person);
 
     interpreter.invoke().unwrap();
 
     // get output for 'no person'
-    let output = interpreter.output(0);
+    let output_tensor = interpreter.output(0);
     assert_eq!(
         [1, 1, 1, 3],
-        output.tensor_info().dims,
+        output_tensor.info().dims,
         "Dimensions of output tensor"
     );
 
-    assert_eq!(2, output.tensor_data::<u8>().iter().position_max().unwrap());
+    assert_eq!(
+        2,
+        output_tensor.as_data::<u8>().iter().position_max().unwrap()
+    );
     info!("---- No-person output correct!");
 
     info!("---- Done");

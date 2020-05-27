@@ -1,3 +1,5 @@
+//! magic_wand example
+
 extern crate itertools;
 use itertools::Itertools;
 use log::info;
@@ -65,10 +67,10 @@ fn test_gesture(
 
     interpreter.invoke().unwrap();
 
-    let output = interpreter.output(0);
+    let output_tensor = interpreter.output(0);
     assert_eq!(
         [1, 4],
-        output.tensor_info().dims,
+        output_tensor.info().dims,
         "Dimensions of output tensor"
     );
 
@@ -77,10 +79,10 @@ fn test_gesture(
     // RingScore
     // SlopeScore
     // NegativeScore
-    dbg!(output.tensor_data::<f32>());
+    dbg!(output_tensor.as_data::<f32>());
     assert_eq!(
-        output
-            .tensor_data::<NotNan<f32>>()
+        output_tensor
+            .as_data::<NotNan<f32>>()
             .iter()
             .position_max()
             .unwrap(),
