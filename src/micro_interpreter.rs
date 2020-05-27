@@ -8,8 +8,7 @@
 //!
 //! ```rust
 //! # use tfmicro::{
-//! #     micro_interpreter::MicroInterpreter, micro_op_resolver::AllOpResolver,
-//! #     model::Model,
+//! #     MicroInterpreter, AllOpResolver, Model,
 //! # };
 //! // model
 //! let model = include_bytes!("../examples/models/hello_world.tflite");
@@ -38,8 +37,7 @@
 //!
 //! ```compile_fail
 //! # use tfmicro::{
-//! #     micro_interpreter::MicroInterpreter, micro_op_resolver::AllOpResolver,
-//! #     model::Model,
+//! #     MicroInterpreter, AllOpResolver, Model,
 //! # };
 //! let mut interpreter = {
 //!     let model = include_bytes!("../examples/models/hello_world.tflite");
