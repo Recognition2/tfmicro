@@ -1,7 +1,9 @@
-//! Tensorflow Lite Op Resolver
+//! Tensorflow Lite Op Resolvers
 //!
 
 use crate::bindings::tflite;
+
+use core::fmt;
 
 cpp! {{
     #include "tensorflow/lite/micro/micro_mutable_op_resolver.h"
@@ -34,6 +36,14 @@ pub struct MutableOpResolver {
 impl MicroMutableOpResolver for MutableOpResolver {
     fn to_inner(self) -> tflite::MicroMutableOpResolver {
         self.inner
+    }
+}
+impl fmt::Debug for MutableOpResolver {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_fmt(format_args!(
+            "MutableOpResolver (resolvers = {})",
+            self.len
+        ))
     }
 }
 
@@ -103,5 +113,23 @@ impl MutableOpResolver {
             capacity: tflite_registrations_max,
             len: 0,
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn all_ops_resolver() {
+        let _ = AllOpResolver::new();
+    }
+
+    #[test]
+    fn mutable_op_resolver() {
+        let _ = MutableOpResolver::empty()
+            .depthwise_conv_2d()
+            .fully_connected()
+            .softmax();
     }
 }

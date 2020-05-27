@@ -33,6 +33,8 @@ fn micro_speech() {
         .fully_connected()
         .softmax();
 
+    info!("Resolver: {:?}", micro_op_resolver);
+
     // Build an interpreter to run the model with
     let mut interpreter =
         MicroInterpreter::new(&model, micro_op_resolver, &mut tensor_arena[..])
