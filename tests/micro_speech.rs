@@ -1,9 +1,6 @@
 //! micro_speech example
 
-use tfmicro::{
-    micro_interpreter::MicroInterpreter, micro_op_resolver::MutableOpResolver,
-    model::Model,
-};
+use tfmicro::{MicroInterpreter, Model, MutableOpResolver};
 
 use log::info;
 

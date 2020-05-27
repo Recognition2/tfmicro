@@ -88,12 +88,13 @@ impl From<bindings::TfLiteStatus> for Status {
 mod micro_error_reporter;
 mod operators;
 
-pub mod micro_interpreter;
-pub mod micro_op_resolver;
-pub mod model;
-pub mod tensor;
+mod frontend;
+mod micro_interpreter;
+mod micro_op_resolver;
+mod model;
+mod tensor;
 
+pub use frontend::Frontend;
 pub use micro_interpreter::MicroInterpreter;
 pub use micro_op_resolver::{AllOpResolver, MutableOpResolver};
-
-pub mod frontend;
+pub use model::Model;

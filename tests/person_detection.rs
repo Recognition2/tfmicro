@@ -1,9 +1,6 @@
 //! person_detection example
 //!
-use tfmicro::{
-    micro_interpreter::MicroInterpreter, micro_op_resolver::MutableOpResolver,
-    model::Model,
-};
+use tfmicro::{MicroInterpreter, Model, MutableOpResolver};
 
 use itertools::Itertools;
 use log::info;
