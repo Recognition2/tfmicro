@@ -1,21 +1,11 @@
 //! TensorFlow model
 
-use core::ops::Deref;
-
 use crate::bindings::tflite;
 use crate::Error;
 
 #[repr(transparent)]
 #[derive(Default)]
 pub struct Model(tflite::Model);
-
-impl Deref for Model {
-    type Target = tflite::Model;
-
-    fn deref(&self) -> &Self::Target {
-        &self.0
-    }
-}
 
 impl Model {
     /// Create a tensorflow model that lives as long as the underlying buffer
