@@ -79,6 +79,7 @@ fn micro_speech() {
     assert!(no_score > yes_score);
 
     interpreter.arena_used_bytes();
+    info!("Output Info: {:?}", output_tensor.info());
 
     info!("---- Done");
 }

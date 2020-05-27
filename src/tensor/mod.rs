@@ -83,14 +83,18 @@ impl Tensor {
     ///
     /// Returns `Some(element_type)` if the element type annotated on this
     /// tensor matches a member of
-    /// [ElementType](#enum.ElementType). Otherwise returns `None`.
+    /// [`ElementType`](crate::tensor::ElementType). Otherwise returns `None`.
     pub fn element_type(&self) -> Option<ElementType> {
         self.0.type_.try_into().ok()
     }
 
-    /// A TensorInfo that describes this tensor
+    /// A [`TensorInfo`](crate::tensor::TensorInfo) that describes this tensor
+    ///
+    /// # Panics
+    ///
+    /// Panics if the underlying tensor cannot be represented by a TensorInfo.
     pub fn info(&self) -> TensorInfo {
-        self.inner().into()
+        self.inner().try_into().unwrap()
     }
 
     fn inner(&self) -> &bindings::TfLiteTensor {
@@ -99,25 +103,23 @@ impl Tensor {
 
     /// Extracts the tensor's data as a flat slice.
     ///
-    /// Call the [input](#method.input) to check the dimensionality of the
-    /// tensor.
+    /// Call the [info](#method.info) method to check the dimensionality of
+    /// the tensor.
     ///
     /// # Panics
     ///
     /// This method will panic if `T` does not match the data type
-    /// annotated on this tensor. Use the [type](#method.type) to discover
-    /// the data type.
+    /// annotated on this tensor. Call
+    /// [element_type()](#method.element_type) to discover the data type.
     pub fn as_data<T>(&self) -> &[T]
     where
         T: ElemTypeOf,
     {
-        let tensor_info: TensorInfo = self.inner().into();
-
         assert!(
-            tensor_info.element_type == T::elem_type_of(),
-            "Invalid type reference of `{:?}` to the original type `{:?}`",
+            self.element_type().unwrap() == T::elem_type_of(),
+            "Type `{:?}` does not match the original type `{:?}`",
             T::elem_type_of(),
-            tensor_info.element_type
+            self.0.type_
         );
 
         unsafe {
@@ -130,25 +132,23 @@ impl Tensor {
 
     /// Extracts the tensor's data as a mutable flat slice.
     ///
-    /// Call the [input](#method.input) to check the dimensionality of the
-    /// tensor.
+    /// Call the [info](#method.info) method to check the dimensionality of
+    /// the tensor.
     ///
     /// # Panics
     ///
     /// This method will panic if `T` does not match the data type
-    /// annotated on this tensor. Use the [type](#method.type) to discover
-    /// the data type.
+    /// annotated on this tensor. Call
+    /// [element_type()](#method.element_type) to discover the data type.
     pub fn as_data_mut<T>(&mut self) -> &mut [T]
     where
         T: ElemTypeOf,
     {
-        let tensor_info: TensorInfo = self.inner().into();
-
         assert!(
-            tensor_info.element_type == T::elem_type_of(),
-            "Invalid type reference of `{:?}` to the original type `{:?}`",
+            self.element_type().unwrap() == T::elem_type_of(),
+            "Type `{:?}` does not match the original type `{:?}`",
             T::elem_type_of(),
-            tensor_info.element_type
+            self.0.type_
         );
 
         unsafe {
