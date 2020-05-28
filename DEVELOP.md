@@ -20,43 +20,24 @@ make -f tensorflow/lite/micro/tools/make/Makefile test_micro_speech_test
 cd ../..
 ```
 
-Finally we need patched versions of the `rust-cpp` crates. The
-`[patches.crates-io]` statement in Cargo.toml expects you arranged the
-crates like this
-
-```
-tfmicro
-  - README.md
-rust-cpp
-  - cpp_build
-  - cpp_macros
-```
-
-So you need to
-
-```
-cd ..
-git clone https://github.com/mystor/rust-cpp
-```
-
 Then we can build!
 
 ```
-cargo run --example minimal
+cargo test
 ```
 
-We use the `env_logger` crate for log output, try
+We use the `env_logger` crate for log output in tests, try
 
 ```
-RUST_LOG=info cargo run --example minimal
+RUST_LOG=info cargo test
 ```
 
 Changes in the tensorflow source tree aren't tracked by cargo. If the
 tensorflow source has changed, use the `build` feature gate to force a
-re-build. You probably want `-j5` or similar for that.
+re-build.
 
 ```
-cargo build -j5 --features build
+cargo build --features build
 ```
 
 To debug `build.rs` itself, try `cargo build -vv`

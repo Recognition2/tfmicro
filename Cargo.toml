@@ -81,6 +81,3 @@ debug = true # symbols are nice
 
 [patch.crates-io]
 cpp = { git = 'https://github.com/richardeoin/rust-cpp' }
-# cpp = { path = "../rust-cpp/cpp" }
-# cpp_build = { path = "../rust-cpp/cpp_build" }
-# cpp_macros = { path = "../rust-cpp/cpp_macros" }
