@@ -16,6 +16,7 @@ cpp! {{
     #include "tensorflow/lite/experimental/microfrontend/lib/frontend_util.h"
 }}
 
+/// Bindings for the audio "frontend" library for feature generation
 pub struct Frontend(bindings::FrontendState);
 
 // Frontend allocates memory on the heap, therefore the raw pointers that

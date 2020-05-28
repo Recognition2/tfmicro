@@ -3,6 +3,7 @@
 use crate::bindings::tflite;
 use crate::Error;
 
+/// A TensorFlow model
 #[repr(transparent)]
 #[derive(Default)]
 pub struct Model(tflite::Model);

@@ -40,10 +40,7 @@ impl MicroMutableOpResolver for MutableOpResolver {
 }
 impl fmt::Debug for MutableOpResolver {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.write_fmt(format_args!(
-            "MutableOpResolver (resolvers = {})",
-            self.len
-        ))
+        f.write_fmt(format_args!("MutableOpResolver (ops = {})", self.len))
     }
 }
 

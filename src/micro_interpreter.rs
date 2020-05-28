@@ -86,6 +86,7 @@ cpp! {{
 static mut ERROR_REPORTER: MaybeUninit<MicroErrorReporter> =
     MaybeUninit::uninit();
 
+/// An interpreter for TensorFlow models
 pub struct MicroInterpreter<'a> {
     // bindgen types
     micro_interpreter: tflite::MicroInterpreter,
@@ -107,8 +108,8 @@ impl<'a> MicroInterpreter<'a> {
     // doesn't do any deallocation of any of the pointed-to objects,
     // ownership remains with the caller."
 
-    /// Create a new micro_interpreter from a Model, a MicroOpResolver and
-    /// a tensor arena (scratchpad).
+    /// Create a new micro_interpreter from a Model, a MicroOpResolver and a
+    /// tensor arena (scratchpad).
     ///
     /// # Errors
     ///
@@ -226,7 +227,7 @@ impl<'a> MicroInterpreter<'a> {
         input_tensor.info()
     }
 
-    /// Copies data into the `n`th input tensor.
+    /// Clones data into the `n`th input tensor.
     ///
     /// # Errors
     ///
@@ -235,6 +236,11 @@ impl<'a> MicroInterpreter<'a> {
     ///
     /// Returns an Error if the underlying tensor cannot be represented by a
     /// [`TensorInfo`](crate::tensor::TensorInfo).
+    ///
+    /// # Panics
+    ///
+    /// Panics if the attempt to get a pointer from TensorFlow returns a
+    /// nullptr. This can occour if the tensor index `n` is invalid.
     pub fn input<T: ElemTypeOf + core::clone::Clone>(
         &mut self,
         n: usize,
@@ -274,6 +280,11 @@ impl<'a> MicroInterpreter<'a> {
 
     /// Runs the Tensorflow operation to transform input tensors to output
     /// tensors
+    ///
+    /// # Errors
+    ///
+    /// Returns a TensorFlow [`Status`](crate::Status) if an error occours in
+    /// TensorFlow.
     pub fn invoke(&mut self) -> Result<(), Status> {
         let interpreter = &self.micro_interpreter;
 
@@ -293,6 +304,10 @@ impl<'a> MicroInterpreter<'a> {
 
     /// Returns an immutable reference to the nth output tensor
     ///
+    /// # Panics
+    ///
+    /// Panics if the attempt to get a pointer from TensorFlow returns a
+    /// nullptr. This can occour if the tensor index `n` is invalid.
     pub fn output(&self, n: usize) -> &'a Tensor {
         let interpreter = &self.micro_interpreter;
         unsafe {
