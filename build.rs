@@ -107,7 +107,6 @@ trait CompilationBuilder {
             .flag("-fmessage-length=0")
             .flag("-fno-exceptions")
             .flag("-fno-unwind-tables")
-            .flag("-fno-builtin")
             .flag("-ffunction-sections")
             .flag("-fdata-sections")
             .flag("-funsigned-char")
