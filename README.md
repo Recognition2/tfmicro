@@ -6,8 +6,8 @@
 
 TensorFlow + `no_std` + Rust = ❤️
 
-The crate contains Rust bindings for the [TensorFlow Micro][]
-project. TensorFlow Micro is a version of TensorFlow Lite designed to run
+The crate contains Rust bindings for the [TensorFlow Lite for Microcontrollers][]
+project. TensorFlow Lite for Microcontrollers is a version of TensorFlow Lite designed to run
 without a standard library, for use on microcontrollers, wasm and more.
 
 Thanks to [Cargo][] and the [CC crate][], there's no porting required for
@@ -31,7 +31,7 @@ tfmicro = 0.1.0
 ```
 
 To understand how the [TensorFlow Micro C examples][c_examples] map to
-idiomatic Rust code, see the [Examples](examples/) directory. Otherwise
+idiomatic Rust code, see the [Tests](tests/) directory. Otherwise
 for a more general description see [Usage](#Usage).
 
 ## Usage
@@ -105,13 +105,12 @@ calling the [`output`](crate::MicroInterpreter::output) method on the
 interpreter.
 
 ```rust
-#
 interpreter.invoke().unwrap();
 
 dbg!(interpreter.output(0).as_data::<f32>());
 ```
 
-And that's it for a minimal use case! See the [Examples](examples/) folder
+And that's it for a minimal use case! See the [Tests](tests/) folder
 for more advanced use cases.
 
 ## Developing
@@ -120,8 +119,24 @@ See [DEVELOP.md](DEVELOP.md)
 
 ## License
 
+[Apache 2.0](LICENSE-APACHE)
+
 [rust-embedded]: https://www.rust-lang.org/what/embedded
-[TensorFlow Micro]: https://github.com/tensorflow/tensorflow/tree/master/tensorflow/lite/micro
+[TensorFlow Lite for Microcontrollers]: https://github.com/tensorflow/tensorflow/tree/master/tensorflow/lite/micro
 [Cargo]: https://doc.rust-lang.org/stable/cargo/
 [CC crate]: https://crates.io/crates/cc
 [c_examples]: https://github.com/tensorflow/tensorflow/tree/master/tensorflow/lite/micro/examples
+
+Copyright 2020 Kevin Hill and Richard Meadows
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.

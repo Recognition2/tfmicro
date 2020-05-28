@@ -2,13 +2,13 @@
 name = "tfmicro"
 version = "0.1.0"
 authors = ["Richard Meadows <richard@richard.fish>", "Kevin Hill <kevin@kevinhill.nl>"]
-description = "Rust bindings for TensorFlow Micro"
-keywords = ["tensorflow", "tfmicro", "no_std", "embedded"]
-license = "MIT/Apache-2.0"
-repository = ""
+description = "Rust bindings of TensorFlow Lite for Microcontrollers"
+license = "Apache-2.0"
+repository = "https://github.com/Recognition2/tfmicro"
 readme = "README.md"
+keywords = ["tensorflow", "microcontroller", "no_std", "embedded"]
+categories = ["no-std", "embedded", "api-bindings", "computer-vision"]
 edition = "2018"
-documentation = "https://docs.rs/tfmicro"
 
 [lib]
 crate-type = ["rlib"]

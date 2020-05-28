@@ -1,8 +1,8 @@
 //!
 //! TensorFlow + `no_std` + Rust = ❤️
 //!
-//! The crate contains Rust bindings for the [TensorFlow Micro][]
-//! project. TensorFlow Micro is a version of TensorFlow Lite designed to run
+//! The crate contains Rust bindings for the [TensorFlow Lite for Microcontrollers][]
+//! project. TensorFlow Lite for Microcontrollers is a version of TensorFlow Lite designed to run
 //! without a standard library, for use on microcontrollers, wasm and more.
 //!
 //! Thanks to [Cargo][] and the [CC crate][], there's no porting required for
@@ -26,7 +26,7 @@
 //! ```
 //!
 //! To understand how the [TensorFlow Micro C examples][c_examples] map to
-//! idiomatic Rust code, see the [Examples](examples/) directory. Otherwise
+//! idiomatic Rust code, see the [Tests](tests/) directory. Otherwise
 //! for a more general description see [Usage](#Usage).
 //!
 //! # Usage
@@ -112,16 +112,14 @@
 //! # const TENSOR_ARENA_SIZE: usize = 4 * 1024;
 //! # let mut arena: [u8; TENSOR_ARENA_SIZE] = [0; TENSOR_ARENA_SIZE];
 //! # let op_resolver = AllOpResolver::new();
-//! #
 //! # let mut interpreter =
-//! #     MicroInterpreter::new(&model, op_resolver, &mut arena[..])
-//! #         .unwrap();
+//! #     MicroInterpreter::new(&model, op_resolver, &mut arena[..]).unwrap();
 //! interpreter.invoke().unwrap();
 //!
 //! dbg!(interpreter.output(0).as_data::<f32>());
 //! ```
 //!
-//! And that's it for a minimal use case! See the [Examples](examples/) folder
+//! And that's it for a minimal use case! See the [Tests](tests/) folder
 //! for more advanced use cases.
 //!
 //! # Developing
@@ -130,8 +128,10 @@
 //!
 //! # License
 //!
+//! [Apache 2.0](LICENSE-APACHE)
+//!
 //! [rust-embedded]: https://www.rust-lang.org/what/embedded
-//! [TensorFlow Micro]: https://github.com/tensorflow/tensorflow/tree/master/tensorflow/lite/micro
+//! [TensorFlow Lite for Microcontrollers]: https://github.com/tensorflow/tensorflow/tree/master/tensorflow/lite/micro
 //! [Cargo]: https://doc.rust-lang.org/stable/cargo/
 //! [CC crate]: https://crates.io/crates/cc
 //! [c_examples]: https://github.com/tensorflow/tensorflow/tree/master/tensorflow/lite/micro/examples
