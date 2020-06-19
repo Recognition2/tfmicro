@@ -42,6 +42,40 @@ cargo build --features build
 
 To debug `build.rs` itself, try `cargo build -vv`
 
+## Updating tensorflow
+
+Some tips for trying out new tensorflow verions
+
+#### Use the build script to automatically run git biscect
+
+```
+cd submodules/tensorflow
+```
+
+Mark the current revision as good
+
+```
+git bisect start
+git bisect good
+```
+
+Grab the latest head
+
+```
+git fetch origin
+git checkout origin/master
+git bisect bad     # Presumably it's bad
+```
+
+Run the build script
+
+```
+git bisect run ../../build.sh
+```
+
+Go do something else for a few hours, then git will tell you which commit was
+bad.
+
 ## Releasing
 
 * Update version in Cargo.toml and lib.rs
