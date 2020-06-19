@@ -9,7 +9,7 @@ use log::info;
 fn person_detection() {
     env_logger::init();
 
-    info!("---- Starting tensorflow micro example: pesron_detection");
+    info!("---- Starting tensorflow micro example: person_detection");
 
     // Include trained model and test datasets
     let model =

@@ -14,7 +14,7 @@ fn micro_speech_frontend(
     let mut output: [u16; 40] = [0; 40];
     frontend.generate_micro_features(audio_slice, &mut output);
 
-    // Scaling, values dervied from using in the training pipeline. See
+    // Scaling, values derived from those used in the training pipeline. See
     // https://github.com/tensorflow/tensorflow/blob/master/tensorflow/lite/micro/examples/micro_speech/micro_features/micro_features_generator.cc
     let mut scaled_features: [u8; 40] = [0; 40];
     for m in 0..40 {

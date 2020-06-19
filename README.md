@@ -117,7 +117,7 @@ for more advanced use cases.
 
 See [DEVELOP.md](DEVELOP.md)
 
-## License
+## License (this crate)
 
 [Apache 2.0](LICENSE-APACHE)
 
