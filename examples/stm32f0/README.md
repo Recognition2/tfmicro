@@ -12,9 +12,29 @@ build dependencies from being enabled for normal dependencies. See this
 cargo build -Z features=build_dep
 ```
 
+## C++ compiler
+
+Error message:
+
+`Error setting up bindgen for cross compiling: Couldn't find target GCC executable.`
+
+You can obtain the GNU Arm Embedded Toolchain [here](https://developer.arm.com/tools-and-software/open-source-software/developer-tools/gnu-toolchain/gnu-rm/downloads).
+
+Installing via a package manager:
+
+```
+sudo apt-get install gcc-arm-none-eabi
+```
+
+Beware: installing from a package manager may give you a rather old version,
+depending on your distro.
+
 ## Binary Size
 
-Built with `rustc 1.46.0-nightly (a8cf39911 2020-06-21)`
+Built with:
+
+* `rustc 1.46.0-nightly (a8cf39911 2020-06-21)`
+* `arm-none-eabi-g++ version 7.3.1 20180622 (release) (GNU Tools for Arm Embedded Processors 7-2018-q3-update)`
 
 ```
 ************************************************************
