@@ -10,17 +10,27 @@ cpp! {{
     #include "tensorflow/lite/micro/kernels/all_ops_resolver.h"
 }}
 
+// AllOpsResolver has the same memory representation as
+// MicroMutableOpResolver<128>.
+//
+// That is:
+// class AllOpsResolver : public MicroMutableOpResolver<128> { ... }
+//
+// Thus we can cast between the two types.
+
+type OpResolverT = tflite::ops::micro::AllOpsResolver;
+
 /// Marker trait for types that have the memory representation of a
-/// `tflite::MicroMutableOpResolver`
-pub trait MicroMutableOpResolver {
-    fn to_inner(self) -> tflite::MicroMutableOpResolver;
+/// `OpResolver`
+pub trait OpResolverRepr {
+    fn to_inner(self) -> OpResolverT;
 }
 
 /// An Op Resolver populated with all available operators
 #[derive(Default)]
-pub struct AllOpResolver(tflite::MicroMutableOpResolver);
-impl MicroMutableOpResolver for AllOpResolver {
-    fn to_inner(self) -> tflite::MicroMutableOpResolver {
+pub struct AllOpResolver(OpResolverT);
+impl OpResolverRepr for AllOpResolver {
+    fn to_inner(self) -> OpResolverT {
         self.0
     }
 }
@@ -29,12 +39,12 @@ impl MicroMutableOpResolver for AllOpResolver {
 /// calling methods in a builder pattern
 #[derive(Default)]
 pub struct MutableOpResolver {
-    pub(crate) inner: tflite::MicroMutableOpResolver,
+    pub(crate) inner: OpResolverT,
     capacity: usize,
     len: usize,
 }
-impl MicroMutableOpResolver for MutableOpResolver {
-    fn to_inner(self) -> tflite::MicroMutableOpResolver {
+impl OpResolverRepr for MutableOpResolver {
+    fn to_inner(self) -> OpResolverT {
         self.inner
     }
 }
@@ -51,7 +61,7 @@ impl AllOpResolver {
         // The C++ compiler fills in the MicroMutableOpResolver with the
         // operators enumerated in AllOpsResolver
         let micro_op_resolver = unsafe {
-            cpp!([] -> tflite::MicroMutableOpResolver as "tflite::MicroMutableOpResolver" {
+            cpp!([] -> OpResolverT as "tflite::ops::micro::AllOpsResolver" {
                 // All ops
                 tflite::ops::micro::AllOpsResolver resolver;
 
@@ -66,9 +76,11 @@ impl AllOpResolver {
 impl MutableOpResolver {
     /// Check the number of operators is OK
     pub(crate) fn check_then_inc_len(&mut self) {
-        assert!(self.len < self.capacity,
-              "Tensorflow micro does not support more than {} operators. See TFLITE_REGISTRATIONS_MAX",
-                self.capacity);
+        assert!(
+            self.len < self.capacity,
+            "Tensorflow micro does not support more than {} operators.",
+            self.capacity
+        );
 
         self.len += 1;
     }
@@ -85,10 +97,10 @@ impl MutableOpResolver {
 
     /// Create a new MutableOpResolver, initially empty
     pub fn empty() -> Self {
-        // Get the maximum number of registrations
-        let tflite_registrations_max = cpp!(unsafe [] -> usize as "size_t" {
-            return TFLITE_REGISTRATIONS_MAX;
-        });
+        // Maximum number of registrations
+        //
+        // tensorflow/lite/micro/kernels/all_ops_resolver.h:L27
+        let tflite_registrations_max = 128;
 
         let micro_op_resolver = unsafe {
             // Create resolver object
@@ -97,10 +109,10 @@ impl MutableOpResolver {
             // `MicroMutableOpResolver`, in order to be layout
             // compatible. However the unreferenced operations themselves will
             // be optimised away
-            cpp!([] -> tflite::MicroMutableOpResolver as
-                 "tflite::MicroOpResolver<TFLITE_REGISTRATIONS_MAX>" {
+            cpp!([] -> OpResolverT as
+                 "tflite::MicroMutableOpResolver<128>" {
 
-                tflite::MicroOpResolver<TFLITE_REGISTRATIONS_MAX> resolver;
+                tflite::MicroMutableOpResolver<128> resolver;
                 return resolver;
             })
         };

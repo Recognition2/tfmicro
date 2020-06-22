@@ -64,7 +64,7 @@ use core::marker::PhantomData;
 use core::mem::MaybeUninit;
 
 use crate::micro_error_reporter::MicroErrorReporter;
-use crate::micro_op_resolver::MicroMutableOpResolver;
+use crate::micro_op_resolver::OpResolverRepr;
 use crate::tensor::{ElemTypeOf, Tensor, TensorInfo};
 use crate::Error;
 use crate::{model::Model, Status};
@@ -124,7 +124,7 @@ impl<'a> MicroInterpreter<'a> {
         tensor_arena: TArena,
     ) -> Result<Self, Error>
     where
-        OpResolver: MicroMutableOpResolver,
+        OpResolver: OpResolverRepr,
         TArena: Into<ManagedSlice<'t, u8>>,
     {
         let resolver = resolver.to_inner();
@@ -152,7 +152,7 @@ impl<'a> MicroInterpreter<'a> {
 
             cpp! ([
                 model as "const tflite::Model*",
-                resolver as "tflite::MicroMutableOpResolver",
+                resolver as "tflite::MicroMutableOpResolver<128>",
                 tensor_arena as "uint8_t*",
                 tensor_arena_size as "size_t",
                 micro_error_reporter_ref as "tflite::MicroErrorReporter*",
