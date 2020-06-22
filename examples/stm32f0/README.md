@@ -12,6 +12,27 @@ build dependencies from being enabled for normal dependencies. See this
 cargo build -Z features=build_dep
 ```
 
+## Binary Size
+
+Built with `rustc 1.46.0-nightly (a8cf39911 2020-06-21)`
+
+```
+************************************************************
+MCU:  STM32F098 debug
+
+.text:    158380 / 262144 = 60.4172 %
+.rodata:  49908 / 262144 = 19.0384 %
+
+************************************************************
+************************************************************
+MCU:  STM32F098 release
+
+.text:    75816 / 262144 = 28.9215 %
+.rodata:  39072 / 262144 = 14.9048 %
+
+************************************************************
+```
+
 ## License (this example)
 
 Licensed under either of
