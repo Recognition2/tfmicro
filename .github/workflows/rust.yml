@@ -116,14 +116,14 @@ jobs:
       - uses: actions-rs/toolchain@master
         with:
           toolchain: nightly
-          target: thumbv6-none-eabi
+          target: thumbv6m-none-eabi
           override: true
-      - uses: actions-rs/cargo@v1
+      - name: Build stm32f0
         working-directory: examples/stm32f0
-        with:
-          use-cross: true
-          command: build
-          args: --verbose --target thumbv6-none-eabi --features tfmicro/no-c-warnings
+        run: |
+          sudo apt-get install gcc-arm-none-eabi
+          arm-none-eabi-g++ -v
+          cargo build --verbose --target thumbv6m-none-eabi --features tfmicro/no-c-warnings -Z features=build_dep
 
   clippy:
     runs-on: ubuntu-latest
