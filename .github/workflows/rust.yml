@@ -82,6 +82,49 @@ jobs:
         run: |
           cargo build --release --verbose --features=no-c-warnings
           cargo test --release --verbose  --features=no-c-warnings
+
+  build-stm32f0-example:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: textbook/git-checkout-submodule-action@2.1.1
+      - uses: docker://gcc
+      - name: Build tensorflow
+        run: |
+          sudo apt-get update -qq >/dev/null 2>&1 && sudo apt-get install -yqq xxd git
+          echo "Using tensorflow hash:  $(git submodule status | awk '{print $1}')"
+          echo "::set-env name=TF_HASH::$(git submodule status | awk '{print $1}')"
+          cd submodules/tensorflow
+          export BUILD_TYPE=debug
+          sudo -E make -f tensorflow/lite/micro/tools/make/Makefile test_magic_wand_test
+          sudo chmod a+rwx -R .
+      - name: Cache cargo registry
+        uses: actions/cache@v1
+        with:
+          path: examples/stm32f0/.cargo/registry
+          key: ${{ runner.os }}-stm32f0-registry-ctoml-${{ hashFiles('**/Cargo.toml') }}
+      - name: Cache cargo index
+        uses: actions/cache@v1
+        with:
+          path: examples/stm32f0/.cargo/git
+          key: ${{ runner.os }}-stm32f0-index-ctoml--${{ hashFiles('**/Cargo.toml') }}
+      - name: Cache cargo build
+        uses: actions/cache@v1
+        with:
+          path: examples/stm32f0/target
+          key: ${{ runner.os }}-stm32f0-target-tf-${{ env.TF_HASH }}-bd-${{ hashFiles('**/build.rs') }}-hpp-${{ hashFiles('**/tflite_wrapper.hpp') }}
+      - uses: actions-rs/toolchain@master
+        with:
+          toolchain: nightly
+          target: thumbv6-none-eabi
+          override: true
+      - uses: actions-rs/cargo@v1
+        working-directory: examples/stm32f0
+        with:
+          use-cross: true
+          command: build
+          args: --verbose --target thumbv6-none-eabi --features tfmicro/no-c-warnings
+
   clippy:
     runs-on: ubuntu-latest
     steps:
