@@ -1,0 +1,20 @@
+[package]
+name = "tfmicro-stm32f0-example"
+version = "0.1.0"
+authors = ["Richard Meadows <richard@richard.fish>", "Kevin Hill <kevin@kevinhill.nl>"]
+license = "Apache-2.0"
+repository = "https://github.com/Recognition2/tfmicro"
+readme = "README.md"
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+cortex-m = "0.6.2"
+cortex-m-rt = "0.6.12"
+panic-halt = "0.2.0"
+stm32f0xx-hal = { version = "0.16.0", features = ["stm32f098"] }
+tfmicro = { path = "../..", features = ["cmsis-nn"]  }
+
+[patch.crates-io]
+cpp = { git = 'https://github.com/richardeoin/rust-cpp' }
