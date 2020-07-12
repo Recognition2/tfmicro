@@ -50,7 +50,7 @@ default-target = "x86_64-unknown-linux-gnu"
 # ]
 
 [dependencies]
-cpp = "0.5.4"
+cpp = "0.5.5"
 cty = "0.2.1"
 log = { version = "0.4.8", default-features = false }
 managed = { version = "0.7", default-features = false }
@@ -77,7 +77,3 @@ cmsis-nn = []
 
 [profile.release]
 debug = true # symbols are nice
-
-
-[patch.crates-io]
-cpp = { git = 'https://github.com/richardeoin/rust-cpp' }
