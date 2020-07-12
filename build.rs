@@ -62,7 +62,7 @@ fn prepare_tensorflow_source() -> PathBuf {
         depth: 0,
     };
 
-    if !tf_src_dir.exists() {
+    if !tf_src_dir.exists() || cfg!(feature = "build") {
         // Copy directory
         println!("Copying TF from {:?}", submodules.join("tensorflow"));
         println!("Copying TF to {:?}", out_dir);
@@ -217,8 +217,7 @@ fn cc_tensorflow_library() {
             .file(tflite.join("lite/core/api/op_resolver.cc"))
             .file(tflite.join("lite/core/api/tensor_utils.cc"))
             .file(tflite.join("lite/kernels/internal/quantization_util.cc"))
-            .file(tflite.join("lite/kernels/kernel_util.cc"))
-            .file(tflite.join("lite/micro/testing/test_utils.cc"));
+            .file(tflite.join("lite/kernels/kernel_util.cc"));
 
         // CMSIS-NN for ARM Cortex-M targets
         if target.starts_with("thumb")

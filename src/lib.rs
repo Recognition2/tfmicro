@@ -16,6 +16,9 @@
 //! analysis, memory guards, fuzzing) as you would with any other legacy C/C++
 //! codebase.
 //!
+//! Currently pinned to TensorFlow
+//! [33689c48ad](https://github.com/tensorflow/tensorflow/tree/33689c48ad5e00908cd59089ef1956e1478fda78)
+//!
 //! # Getting started
 //!
 //! Add `tfmicro` in the dependencies section of your `Cargo.toml`
