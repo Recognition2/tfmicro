@@ -78,5 +78,24 @@ bad.
 
 ## Releasing
 
-* Update version in Cargo.toml and lib.rs
-* Create with `cargo readme > README.md`
+1. Update version in Cargo.toml and lib.rs
+   * Update CHANGELOG.md
+   * Then commit it
+
+```
+git commit -m "v0.1.0"
+```
+
+2. Run `publish_crate.sh`. The script does these tasks:
+   * Checks the README is up-to-date with lib.rs
+   * Checks that crate builds with only files from the include list in Cargo.toml
+   * Checks the resulting package size is ok
+   * Publishes to crates.io
+
+3. Push and tag release commit:
+
+```
+git push
+git tag -a 'v0.1.0' -m 'v0.1.0'
+git push origin v0.1.0
+```
