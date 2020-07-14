@@ -57,13 +57,13 @@ default-target = "x86_64-unknown-linux-gnu"
 cpp = "0.5.5"
 cty = "0.2.1"
 log = { version = "0.4.8", default-features = false }
-managed = { version = "0.7", default-features = false }
-ordered-float = { version = "1.0", default-features = false }
+managed = { version = "0.8.0", default-features = false }
+ordered-float = { version = "2.0.0", default-features = false }
 
 [build-dependencies]
-cc = { version = "1.0.52", features = ["parallel"] }
-bindgen = "0.53.2"
-cpp_build = "0.5.4"
+cc = { version = "1.0.58", features = ["parallel"] }
+bindgen = "0.54.1"
+cpp_build = "0.5.5"
 glob = "0.3.0"
 fs_extra = "1.1.0"
 error-chain = "0.12.2"
