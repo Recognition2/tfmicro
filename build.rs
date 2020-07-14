@@ -144,6 +144,30 @@ trait CompilationBuilder {
             build
         }
     }
+
+    /// For some targets, the compiler/libraries do not quite follow the ISO C++
+    /// specification Section D.5.2. This specifies that C headers behave as if
+    /// they were placed in the std namespace, and they may optionally appear in
+    /// the global namespace.
+    ///
+    /// In these cases the cmath functions appear in the global name, but not
+    /// the std namespace. Tensorflow already has a mechanism for this, see
+    /// tensorflow/lite/kernels/internal/cppmath.h
+    ///
+    /// We activate this with the TF_LITE_USE_GLOBAL_CMATH_FUNCTIONS flag, but
+    /// to cover a few remaining cases we also inject the needed functions from
+    /// the global namespace into std (which C++ somehow allows.. #footgun).
+    fn global_cmath_for_target(&mut self, target: &String) -> &mut Self {
+        // risc-v or android
+        //
+        // not fully tested, could be wrong
+        if target.starts_with("riscv32") || target.contains("android") {
+            self.define("TF_LITE_USE_GLOBAL_CMATH_FUNCTIONS", None)
+                .flag("-includecsrc/inject_cmath_std.hpp")
+        } else {
+            self
+        }
+    }
 }
 impl CompilationBuilder for cpp_build::Config {
     fn flag(&mut self, s: &str) -> &mut Self {
@@ -196,6 +220,7 @@ fn cc_tensorflow_library() {
             .cpp(true)
             .tensorflow_build_setup()
             .cpp_link_stdlib(None)
+            .global_cmath_for_target(&target)
             //
             .include(tflite.parent().unwrap())
             .include(tfmicro_mdir.join("downloads"))
@@ -265,10 +290,21 @@ fn bindgen_cross_builder() -> Result<bindgen::Builder> {
     let builder = bindgen::Builder::default().clang_arg("--verbose");
 
     if is_cross_compiling()? {
-        // Setup target triple
         let target = env::var("TARGET")?;
-        let builder = builder.clang_arg(format!("--target={}", target));
-        println!("Setting bindgen to cross compile to {}", target);
+
+        // Setup target triple
+        let builder = if target.starts_with("riscv32") {
+            println!("Setting bindgen to cross compile to RISCV32");
+            // See bindgen#1555
+            //
+            // https://github.com/rust-lang/rust-bindgen/issues/1555
+            //
+            builder.clang_arg("--target=riscv32")
+        } else {
+            println!("Setting bindgen to cross compile to {}", target);
+
+            builder.clang_arg(format!("--target={}", target))
+        };
 
         // Find the sysroot used by the crosscompiler, and pass this to clang
         let mut gcc = cc::Build::new().get_compiler().to_command();
