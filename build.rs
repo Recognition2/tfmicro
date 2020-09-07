@@ -55,6 +55,7 @@ fn prepare_tensorflow_source() -> PathBuf {
     let submodules = submodules();
 
     let copy_dir = fs_extra::dir::CopyOptions {
+        content_only: false,
         overwrite: true,
         skip_exist: false,
         buffer_size: 65536,
