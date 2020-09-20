@@ -59,6 +59,7 @@ fn prepare_tensorflow_source() -> PathBuf {
         skip_exist: false,
         buffer_size: 65536,
         copy_inside: false,
+        content_only: false,
         depth: 0,
     };
 
