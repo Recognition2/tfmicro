@@ -16,7 +16,7 @@ impl MutableOpResolver {
         self
     }
     /// Use the MAX_POOL_2D operator in this op resolver
-    pub fn max_pool_2D(mut self) -> Self {
+    pub fn max_pool_2d(mut self) -> Self {
         self.check_then_inc_len();
         let inner_ref = &mut self.inner;
 
@@ -60,7 +60,7 @@ impl MutableOpResolver {
         self
     }
     /// Use the CONV_2D operator in this op resolver
-    pub fn conv_2D(mut self) -> Self {
+    pub fn conv_2d(mut self) -> Self {
         self.check_then_inc_len();
         let inner_ref = &mut self.inner;
 
@@ -82,7 +82,7 @@ impl MutableOpResolver {
         self
     }
     /// Use the DEPTHWISE_CONV_2D operator in this op resolver
-    pub fn depthwise_conv_2D(mut self) -> Self {
+    pub fn depthwise_conv_2d(mut self) -> Self {
         self.check_then_inc_len();
         let inner_ref = &mut self.inner;
 
@@ -93,7 +93,7 @@ impl MutableOpResolver {
         self
     }
     /// Use the AVERAGE_POOL_2D operator in this op resolver
-    pub fn average_pool_2D(mut self) -> Self {
+    pub fn average_pool_2d(mut self) -> Self {
         self.check_then_inc_len();
         let inner_ref = &mut self.inner;
 

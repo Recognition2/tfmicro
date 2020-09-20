@@ -171,6 +171,7 @@ pub enum Status {
     Ok,
     Error,
     DelegateError,
+    ApplicationError,
 }
 impl From<bindings::TfLiteStatus> for Status {
     fn from(status: bindings::TfLiteStatus) -> Self {
@@ -180,6 +181,7 @@ impl From<bindings::TfLiteStatus> for Status {
             bindings::TfLiteStatus::kTfLiteOk => Ok,
             bindings::TfLiteStatus::kTfLiteError => Error,
             bindings::TfLiteStatus::kTfLiteDelegateError => DelegateError,
+            bindings::TfLiteStatus::kTfLiteApplicationError => ApplicationError,
         }
     }
 }

@@ -18,7 +18,7 @@ cpp! {{
 //
 // Thus we can cast between the two types.
 
-type OpResolverT = crate::bindings::tflite::AllOpsResolver;
+type OpResolverT = tflite::AllOpsResolver;
 
 /// Marker trait for types that have the memory representation of a
 /// `OpResolver`
