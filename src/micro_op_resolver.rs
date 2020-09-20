@@ -7,7 +7,7 @@ use core::fmt;
 
 cpp! {{
     #include "tensorflow/lite/micro/micro_mutable_op_resolver.h"
-    #include "tensorflow/lite/micro/kernels/all_ops_resolver.h"
+    #include "tensorflow/lite/micro/all_ops_resolver.h"
 }}
 
 // AllOpsResolver has the same memory representation as
