@@ -18,7 +18,7 @@ cpp! {{
 //
 // Thus we can cast between the two types.
 
-type OpResolverT = tflite::ops::micro::AllOpsResolver;
+type OpResolverT = crate::bindings::tflite::AllOpsResolver;
 
 /// Marker trait for types that have the memory representation of a
 /// `OpResolver`
@@ -61,9 +61,9 @@ impl AllOpResolver {
         // The C++ compiler fills in the MicroMutableOpResolver with the
         // operators enumerated in AllOpsResolver
         let micro_op_resolver = unsafe {
-            cpp!([] -> OpResolverT as "tflite::ops::micro::AllOpsResolver" {
+            cpp!([] -> OpResolverT as "tflite::AllOpsResolver" {
                 // All ops
-                tflite::ops::micro::AllOpsResolver resolver;
+                tflite::AllOpsResolver resolver;
 
                 return resolver;
             })
