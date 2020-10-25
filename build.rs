@@ -59,7 +59,7 @@ fn check_submodules_or_checkout_from_git() {
         run_command_or_fail(".", "git", &["submodule", "update", "--init"]);
     }
 
-    if !Path::new("submodules/tensorflow/lite/micro/tools/make/downloads/flatbuffers/CONTRIBUTING.md").exists() {
+    if !Path::new("submodules/tensorflow/tensorflow/lite/micro/tools/make/downloads/flatbuffers/CONTRIBUTING.md").exists() {
         eprintln!("Building tensorflow micro example to fetch Tensorflow dependencies");
         run_command_or_fail("submodules/tensorflow", "make", &["-f", "tensorflow/lite/micro/tools/make/Makefile", "test_micro_speech_test"]);
     }
