@@ -46,7 +46,7 @@ where
     );
     let ret = Command::new(cmd).current_dir(dir).args(args).status();
     match ret.map(|status| (status.success(), status.code())) {
-        Ok((true, _)) => return,
+        Ok((true, _)) => {}
         Ok((false, Some(c))) => panic!("Command failed with error code {}", c),
         Ok((false, None)) => panic!("Command got killed"),
         Err(e) => panic!("Command failed with error: {}", e),
@@ -58,10 +58,10 @@ fn check_submodules_or_checkout_from_git() {
         eprintln!("Setting up submodules");
         run_command_or_fail(".", "git", &["submodule", "update", "--init"]);
     }
-    eprintln!("Done?");
+
     if !Path::new("submodules/tensorflow/lite/micro/tools/make/downloads/flatbuffers/CONTRIBUTING.md").exists() {
-        eprintln!("Generating and fetching files using Sparkfun Edge target");
-        run_command_or_fail("submodules/tensorflow", "make", &["-f", "tensorflow/lite/micro/tools/make/Makefile", "TARGET=sparkfun_edge", "hello_world_bin"]);
+        eprintln!("Building tensorflow micro example to fetch Tensorflow dependencies");
+        run_command_or_fail("submodules/tensorflow", "make", &["-f", "tensorflow/lite/micro/tools/make/Makefile", "test_micro_speech_test"]);
     }
 }
 
