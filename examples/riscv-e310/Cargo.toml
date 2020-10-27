@@ -1,0 +1,19 @@
+[package]
+name = "tfmicro-riscv-e310-example"
+version = "0.1.0"
+authors = ["Richard Meadows <richard@richard.fish>", "Kevin Hill <kevin@kevinhill.nl>"]
+license = "Apache-2.0"
+repository = "https://github.com/Recognition2/tfmicro"
+readme = "README.md"
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+e310x-hal = "0.8.3"
+embedded-hal = "0.2.4"
+riscv = "0.6.0"
+nb = "1.0.0"
+panic-halt = "0.2.0"
+riscv-rt = { path = "/scratch/riscv-rt" }
+tfmicro = { path = "../.." }
