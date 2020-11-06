@@ -169,6 +169,7 @@ trait CompilationBuilder {
             .flag("-fno-short-enums")
             .define("TF_LITE_STATIC_MEMORY", None)
             .define("TF_LITE_MCU_DEBUG_LOG", None)
+            .define("TF_LITE_DISABLE_X86_NEON", None)
             .define("GEMMLOWP_ALLOW_SLOW_SCALAR_FALLBACK", None);
 
         // warnings on by default
