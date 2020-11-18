@@ -167,6 +167,8 @@ trait CompilationBuilder {
             .flag("-fno-use-cxa-atexit")
             // use a full word for enums, this should match clang's behaviour
             .flag("-fno-short-enums")
+            .define("NDEBUG", None)
+            .define("TF_LITE_STRIP_ERROR_STRINGS", None)
             .define("TF_LITE_STATIC_MEMORY", None)
             .define("TF_LITE_MCU_DEBUG_LOG", None)
             .define("GEMMLOWP_ALLOW_SLOW_SCALAR_FALLBACK", None);
