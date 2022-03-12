@@ -265,6 +265,7 @@ fn cc_tensorflow_library() {
             .file(tflite.join("lite/core/api/flatbuffer_conversions.cc"))
             .file(tflite.join("lite/core/api/op_resolver.cc"))
             .file(tflite.join("lite/core/api/tensor_utils.cc"))
+            .file(tflite.join("lite/schema/schema_utils.cc"))
             .file(tflite.join("lite/kernels/internal/quantization_util.cc"))
             .file(tflite.join("lite/kernels/kernel_util.cc"));
 
@@ -383,7 +384,7 @@ fn bindgen_tflite_types() {
 
         let bindings = bindgen_cross_builder()
             .expect("Error setting up bindgen for cross compiling")
-            .whitelist_recursively(true)
+            .allowlist_recursively(true)
             .prepend_enum_name(false)
             .impl_debug(true)
             .with_codegen_config(CodegenConfig::TYPES)
@@ -394,22 +395,22 @@ fn bindgen_tflite_types() {
             .use_core()
             .ctypes_prefix("cty")
             // Types
-            .whitelist_type("tflite::MicroErrorReporter")
+            .allowlist_type("tflite::MicroErrorReporter")
             .opaque_type("tflite::MicroErrorReporter")
-            .whitelist_type("tflite::Model")
+            .allowlist_type("tflite::Model")
             .opaque_type("tflite::Model")
-            .whitelist_type("tflite::MicroInterpreter")
+            .allowlist_type("tflite::MicroInterpreter")
             .opaque_type("tflite::MicroInterpreter")
-            .whitelist_type("tflite::ops::micro::AllOpsResolver")
-            .opaque_type("tflite::ops::micro::AllOpsResolver")
-            .whitelist_type("TfLiteTensor")
-            .whitelist_type("FrontendState")
-            .whitelist_type("FrontendConfig")
-            .whitelist_type("FrontendOutput")
+            .allowlist_type("tflite::AllOpsResolver")
+            .opaque_type("tflite::AllOpsResolver")
+            .allowlist_type("TfLiteTensor")
+            .allowlist_type("FrontendState")
+            .allowlist_type("FrontendConfig")
+            .allowlist_type("FrontendOutput")
             // Types - blacklist
-            .blacklist_type("std")
-            .blacklist_type("tflite::Interpreter_TfLiteDelegatePtr")
-            .blacklist_type("tflite::Interpreter_State")
+            .blocklist_type("std")
+            .blocklist_type("tflite::Interpreter_TfLiteDelegatePtr")
+            .blocklist_type("tflite::Interpreter_State")
             .default_enum_style(EnumVariation::Rust {
                 non_exhaustive: false,
             })

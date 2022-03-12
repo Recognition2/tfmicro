@@ -171,6 +171,11 @@ pub enum Status {
     Ok,
     Error,
     DelegateError,
+    ApplicationError,
+    DelegateDataNotFoundError,
+    DelegateDataWriteError,
+    DelegateDataReadError,
+    UnresolvedOps
 }
 impl From<bindings::TfLiteStatus> for Status {
     fn from(status: bindings::TfLiteStatus) -> Self {
@@ -180,6 +185,11 @@ impl From<bindings::TfLiteStatus> for Status {
             bindings::TfLiteStatus::kTfLiteOk => Ok,
             bindings::TfLiteStatus::kTfLiteError => Error,
             bindings::TfLiteStatus::kTfLiteDelegateError => DelegateError,
+            bindings::TfLiteStatus::kTfLiteApplicationError => ApplicationError,
+            bindings::TfLiteStatus::kTfLiteDelegateDataNotFound => DelegateDataNotFoundError,
+            bindings::TfLiteStatus::kTfLiteDelegateDataWriteError => DelegateDataWriteError,
+            bindings::TfLiteStatus::kTfLiteDelegateDataReadError => DelegateDataReadError,
+            bindings::TfLiteStatus::kTfLiteUnresolvedOps => UnresolvedOps,
         }
     }
 }
