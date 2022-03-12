@@ -1,6 +1,6 @@
 /// Operators for Tensorflow micro
 ///
-/// See lite/micro/kernels/all_ops_resolver.cc
+/// See lite/micro/all_ops_resolver.cc
 use crate::micro_op_resolver::MutableOpResolver;
 
 impl MutableOpResolver {
@@ -10,10 +10,7 @@ impl MutableOpResolver {
         let inner_ref = &mut self.inner;
 
         cpp!(unsafe [inner_ref as "tflite::MicroMutableOpResolver<128>*"] {
-            inner_ref->AddBuiltin(
-                tflite::BuiltinOperator_FULLY_CONNECTED,
-                tflite::ops::micro::Register_FULLY_CONNECTED()
-            );
+            inner_ref->AddFullyConnected();
         });
 
         self
@@ -24,10 +21,7 @@ impl MutableOpResolver {
         let inner_ref = &mut self.inner;
 
         cpp!(unsafe [inner_ref as "tflite::MicroMutableOpResolver<128>*"] {
-            inner_ref->AddBuiltin(
-                tflite::BuiltinOperator_MAX_POOL_2D,
-                tflite::ops::micro::Register_MAX_POOL_2D()
-            );
+            inner_ref->AddMaxPool2D();
         });
 
         self
@@ -38,10 +32,7 @@ impl MutableOpResolver {
         let inner_ref = &mut self.inner;
 
         cpp!(unsafe [inner_ref as "tflite::MicroMutableOpResolver<128>*"] {
-            inner_ref->AddBuiltin(
-                tflite::BuiltinOperator_SOFTMAX,
-                tflite::ops::micro::Register_SOFTMAX()
-            );
+            inner_ref->AddSoftmax();
         });
 
         self
@@ -52,10 +43,7 @@ impl MutableOpResolver {
         let inner_ref = &mut self.inner;
 
         cpp!(unsafe [inner_ref as "tflite::MicroMutableOpResolver<128>*"] {
-            inner_ref->AddBuiltin(
-                tflite::BuiltinOperator_LOGISTIC,
-                tflite::ops::micro::Register_LOGISTIC()
-            );
+            inner_ref->AddLogistic();
         });
 
         self
@@ -66,10 +54,7 @@ impl MutableOpResolver {
         let inner_ref = &mut self.inner;
 
         cpp!(unsafe [inner_ref as "tflite::MicroMutableOpResolver<128>*"] {
-            inner_ref->AddBuiltin(
-                tflite::BuiltinOperator_SVDF,
-                tflite::ops::micro::Register_SVDF()
-            );
+            inner_ref->AddSvdf(); 
         });
 
         self
@@ -80,10 +65,7 @@ impl MutableOpResolver {
         let inner_ref = &mut self.inner;
 
         cpp!(unsafe [inner_ref as "tflite::MicroMutableOpResolver<128>*"] {
-            inner_ref->AddBuiltin(
-                tflite::BuiltinOperator_CONV_2D,
-                tflite::ops::micro::Register_CONV_2D()
-            );
+            inner_ref->AddConv2D();
         });
 
         self
@@ -94,10 +76,7 @@ impl MutableOpResolver {
         let inner_ref = &mut self.inner;
 
         cpp!(unsafe [inner_ref as "tflite::MicroMutableOpResolver<128>*"] {
-            inner_ref->AddBuiltin(
-                tflite::BuiltinOperator_CONCATENATION,
-                tflite::ops::micro::Register_CONCATENATION()
-            );
+            inner_ref->AddConcatenation();
         });
 
         self
@@ -108,10 +87,7 @@ impl MutableOpResolver {
         let inner_ref = &mut self.inner;
 
         cpp!(unsafe [inner_ref as "tflite::MicroMutableOpResolver<128>*"] {
-            inner_ref->AddBuiltin(
-                tflite::BuiltinOperator_DEPTHWISE_CONV_2D,
-                tflite::ops::micro::Register_DEPTHWISE_CONV_2D()
-            );
+            inner_ref->AddDepthwiseConv2D();
         });
 
         self
@@ -122,10 +98,7 @@ impl MutableOpResolver {
         let inner_ref = &mut self.inner;
 
         cpp!(unsafe [inner_ref as "tflite::MicroMutableOpResolver<128>*"] {
-            inner_ref->AddBuiltin(
-                tflite::BuiltinOperator_AVERAGE_POOL_2D,
-                tflite::ops::micro::Register_AVERAGE_POOL_2D()
-            );
+            inner_ref->AddAveragePool2D();
         });
 
         self
@@ -136,10 +109,7 @@ impl MutableOpResolver {
         let inner_ref = &mut self.inner;
 
         cpp!(unsafe [inner_ref as "tflite::MicroMutableOpResolver<128>*"] {
-            inner_ref->AddBuiltin(
-                tflite::BuiltinOperator_ABS,
-                tflite::ops::micro::Register_ABS()
-            );
+            inner_ref->AddAbs();
         });
 
         self
@@ -150,10 +120,7 @@ impl MutableOpResolver {
         let inner_ref = &mut self.inner;
 
         cpp!(unsafe [inner_ref as "tflite::MicroMutableOpResolver<128>*"] {
-            inner_ref->AddBuiltin(
-                tflite::BuiltinOperator_SIN,
-                tflite::ops::micro::Register_SIN()
-            );
+            inner_ref->AddSin();
         });
 
         self
@@ -164,10 +131,7 @@ impl MutableOpResolver {
         let inner_ref = &mut self.inner;
 
         cpp!(unsafe [inner_ref as "tflite::MicroMutableOpResolver<128>*"] {
-            inner_ref->AddBuiltin(
-                tflite::BuiltinOperator_COS,
-                tflite::ops::micro::Register_COS()
-            );
+            inner_ref->AddCos();
         });
 
         self
@@ -178,10 +142,7 @@ impl MutableOpResolver {
         let inner_ref = &mut self.inner;
 
         cpp!(unsafe [inner_ref as "tflite::MicroMutableOpResolver<128>*"] {
-            inner_ref->AddBuiltin(
-                tflite::BuiltinOperator_LOG,
-                tflite::ops::micro::Register_LOG()
-            );
+            inner_ref->AddLog();
         });
 
         self
@@ -192,10 +153,7 @@ impl MutableOpResolver {
         let inner_ref = &mut self.inner;
 
         cpp!(unsafe [inner_ref as "tflite::MicroMutableOpResolver<128>*"] {
-            inner_ref->AddBuiltin(
-                tflite::BuiltinOperator_SQRT,
-                tflite::ops::micro::Register_SQRT()
-            );
+            inner_ref->AddSqrt();
         });
 
         self
@@ -206,10 +164,7 @@ impl MutableOpResolver {
         let inner_ref = &mut self.inner;
 
         cpp!(unsafe [inner_ref as "tflite::MicroMutableOpResolver<128>*"] {
-            inner_ref->AddBuiltin(
-                tflite::BuiltinOperator_RSQRT,
-                tflite::ops::micro::Register_RSQRT()
-            );
+            inner_ref->AddRsqrt();
         });
 
         self
@@ -220,10 +175,7 @@ impl MutableOpResolver {
         let inner_ref = &mut self.inner;
 
         cpp!(unsafe [inner_ref as "tflite::MicroMutableOpResolver<128>*"] {
-            inner_ref->AddBuiltin(
-                tflite::BuiltinOperator_SQUARE,
-                tflite::ops::micro::Register_SQUARE()
-            );
+            inner_ref->AddSquare();
         });
 
         self
@@ -234,10 +186,7 @@ impl MutableOpResolver {
         let inner_ref = &mut self.inner;
 
         cpp!(unsafe [inner_ref as "tflite::MicroMutableOpResolver<128>*"] {
-            inner_ref->AddBuiltin(
-                tflite::BuiltinOperator_PRELU,
-                tflite::ops::micro::Register_PRELU()
-            );
+            inner_ref->AddPrelu();
         });
 
         self
@@ -248,10 +197,7 @@ impl MutableOpResolver {
         let inner_ref = &mut self.inner;
 
         cpp!(unsafe [inner_ref as "tflite::MicroMutableOpResolver<128>*"] {
-            inner_ref->AddBuiltin(
-                tflite::BuiltinOperator_FLOOR,
-                tflite::ops::micro::Register_FLOOR()
-            );
+            inner_ref->AddFloor();
         });
 
         self
@@ -262,10 +208,7 @@ impl MutableOpResolver {
         let inner_ref = &mut self.inner;
 
         cpp!(unsafe [inner_ref as "tflite::MicroMutableOpResolver<128>*"] {
-            inner_ref->AddBuiltin(
-                tflite::BuiltinOperator_MAXIMUM,
-                tflite::ops::micro::Register_MAXIMUM()
-            );
+            inner_ref->AddMaximum();
         });
 
         self
@@ -276,10 +219,7 @@ impl MutableOpResolver {
         let inner_ref = &mut self.inner;
 
         cpp!(unsafe [inner_ref as "tflite::MicroMutableOpResolver<128>*"] {
-            inner_ref->AddBuiltin(
-                tflite::BuiltinOperator_MINIMUM,
-                tflite::ops::micro::Register_MINIMUM()
-            );
+            inner_ref->AddMinimum();
         });
 
         self
@@ -290,10 +230,7 @@ impl MutableOpResolver {
         let inner_ref = &mut self.inner;
 
         cpp!(unsafe [inner_ref as "tflite::MicroMutableOpResolver<128>*"] {
-            inner_ref->AddBuiltin(
-                tflite::BuiltinOperator_ARG_MAX,
-                tflite::ops::micro::Register_ARG_MAX()
-            );
+            inner_ref->AddArgMax();
         });
 
         self
@@ -304,10 +241,7 @@ impl MutableOpResolver {
         let inner_ref = &mut self.inner;
 
         cpp!(unsafe [inner_ref as "tflite::MicroMutableOpResolver<128>*"] {
-            inner_ref->AddBuiltin(
-                tflite::BuiltinOperator_ARG_MIN,
-                tflite::ops::micro::Register_ARG_MIN()
-            );
+            inner_ref->AddArgMin();
         });
 
         self
@@ -318,10 +252,7 @@ impl MutableOpResolver {
         let inner_ref = &mut self.inner;
 
         cpp!(unsafe [inner_ref as "tflite::MicroMutableOpResolver<128>*"] {
-            inner_ref->AddBuiltin(
-                tflite::BuiltinOperator_LOGICAL_OR,
-                tflite::ops::micro::Register_LOGICAL_OR()
-            );
+            inner_ref->AddLogicalOr();
         });
 
         self
@@ -332,10 +263,7 @@ impl MutableOpResolver {
         let inner_ref = &mut self.inner;
 
         cpp!(unsafe [inner_ref as "tflite::MicroMutableOpResolver<128>*"] {
-            inner_ref->AddBuiltin(
-                tflite::BuiltinOperator_LOGICAL_AND,
-                tflite::ops::micro::Register_LOGICAL_AND()
-            );
+            inner_ref->AddLogicalAnd();
         });
 
         self
@@ -346,10 +274,7 @@ impl MutableOpResolver {
         let inner_ref = &mut self.inner;
 
         cpp!(unsafe [inner_ref as "tflite::MicroMutableOpResolver<128>*"] {
-            inner_ref->AddBuiltin(
-                tflite::BuiltinOperator_LOGICAL_NOT,
-                tflite::ops::micro::Register_LOGICAL_NOT()
-            );
+            inner_ref->AddLogicalNot();
         });
 
         self
@@ -360,10 +285,7 @@ impl MutableOpResolver {
         let inner_ref = &mut self.inner;
 
         cpp!(unsafe [inner_ref as "tflite::MicroMutableOpResolver<128>*"] {
-            inner_ref->AddBuiltin(
-                tflite::BuiltinOperator_RESHAPE,
-                tflite::ops::micro::Register_RESHAPE()
-            );
+            inner_ref->AddReshape();
         });
 
         self
@@ -374,10 +296,7 @@ impl MutableOpResolver {
         let inner_ref = &mut self.inner;
 
         cpp!(unsafe [inner_ref as "tflite::MicroMutableOpResolver<128>*"] {
-            inner_ref->AddBuiltin(
-                tflite::BuiltinOperator_EQUAL,
-                tflite::ops::micro::Register_EQUAL()
-            );
+            inner_ref->AddEqual();
         });
 
         self
@@ -388,10 +307,7 @@ impl MutableOpResolver {
         let inner_ref = &mut self.inner;
 
         cpp!(unsafe [inner_ref as "tflite::MicroMutableOpResolver<128>*"] {
-            inner_ref->AddBuiltin(
-                tflite::BuiltinOperator_NOT_EQUAL,
-                tflite::ops::micro::Register_NOT_EQUAL()
-            );
+            inner_ref->AddNotEqual();
         });
 
         self
@@ -402,10 +318,7 @@ impl MutableOpResolver {
         let inner_ref = &mut self.inner;
 
         cpp!(unsafe [inner_ref as "tflite::MicroMutableOpResolver<128>*"] {
-            inner_ref->AddBuiltin(
-                tflite::BuiltinOperator_GREATER,
-                tflite::ops::micro::Register_GREATER()
-            );
+            inner_ref->AddGreater();
         });
 
         self
@@ -416,10 +329,7 @@ impl MutableOpResolver {
         let inner_ref = &mut self.inner;
 
         cpp!(unsafe [inner_ref as "tflite::MicroMutableOpResolver<128>*"] {
-            inner_ref->AddBuiltin(
-                tflite::BuiltinOperator_GREATER_EQUAL,
-                tflite::ops::micro::Register_GREATER_EQUAL()
-            );
+            inner_ref->AddGreaterEqual();
         });
 
         self
@@ -430,10 +340,7 @@ impl MutableOpResolver {
         let inner_ref = &mut self.inner;
 
         cpp!(unsafe [inner_ref as "tflite::MicroMutableOpResolver<128>*"] {
-            inner_ref->AddBuiltin(
-                tflite::BuiltinOperator_LESS,
-                tflite::ops::micro::Register_LESS()
-            );
+            inner_ref->AddLess();
         });
 
         self
@@ -444,10 +351,7 @@ impl MutableOpResolver {
         let inner_ref = &mut self.inner;
 
         cpp!(unsafe [inner_ref as "tflite::MicroMutableOpResolver<128>*"] {
-            inner_ref->AddBuiltin(
-                tflite::BuiltinOperator_LESS_EQUAL,
-                tflite::ops::micro::Register_LESS_EQUAL()
-            );
+            inner_ref->AddLessEqual();
         });
 
         self
@@ -458,10 +362,7 @@ impl MutableOpResolver {
         let inner_ref = &mut self.inner;
 
         cpp!(unsafe [inner_ref as "tflite::MicroMutableOpResolver<128>*"] {
-            inner_ref->AddBuiltin(
-                tflite::BuiltinOperator_CEIL,
-                tflite::ops::micro::Register_CEIL()
-            );
+            inner_ref->AddCeil();
         });
 
         self
@@ -472,10 +373,7 @@ impl MutableOpResolver {
         let inner_ref = &mut self.inner;
 
         cpp!(unsafe [inner_ref as "tflite::MicroMutableOpResolver<128>*"] {
-            inner_ref->AddBuiltin(
-                tflite::BuiltinOperator_ROUND,
-                tflite::ops::micro::Register_ROUND()
-            );
+            inner_ref->AddRound();
         });
 
         self
@@ -486,10 +384,7 @@ impl MutableOpResolver {
         let inner_ref = &mut self.inner;
 
         cpp!(unsafe [inner_ref as "tflite::MicroMutableOpResolver<128>*"] {
-            inner_ref->AddBuiltin(
-                tflite::BuiltinOperator_STRIDED_SLICE,
-                tflite::ops::micro::Register_STRIDED_SLICE()
-            );
+            inner_ref->AddStridedSlice();
         });
 
         self
@@ -500,10 +395,7 @@ impl MutableOpResolver {
         let inner_ref = &mut self.inner;
 
         cpp!(unsafe [inner_ref as "tflite::MicroMutableOpResolver<128>*"] {
-            inner_ref->AddBuiltin(
-                tflite::BuiltinOperator_PACK,
-                tflite::ops::micro::Register_PACK()
-            );
+            inner_ref->AddPack();
         });
 
         self
@@ -514,10 +406,7 @@ impl MutableOpResolver {
         let inner_ref = &mut self.inner;
 
         cpp!(unsafe [inner_ref as "tflite::MicroMutableOpResolver<128>*"] {
-            inner_ref->AddBuiltin(
-                tflite::BuiltinOperator_PAD,
-                tflite::ops::micro::Register_PAD()
-            );
+            inner_ref->AddPad();
         });
 
         self
@@ -528,10 +417,7 @@ impl MutableOpResolver {
         let inner_ref = &mut self.inner;
 
         cpp!(unsafe [inner_ref as "tflite::MicroMutableOpResolver<128>*"] {
-            inner_ref->AddBuiltin(
-                tflite::BuiltinOperator_PADV2,
-                tflite::ops::micro::Register_PADV2()
-            );
+            inner_ref->AddPadV2();
         });
 
         self
@@ -542,10 +428,7 @@ impl MutableOpResolver {
         let inner_ref = &mut self.inner;
 
         cpp!(unsafe [inner_ref as "tflite::MicroMutableOpResolver<128>*"] {
-            inner_ref->AddBuiltin(
-                tflite::BuiltinOperator_SPLIT,
-                tflite::ops::micro::Register_SPLIT()
-            );
+            inner_ref->AddSplit();
         });
 
         self
@@ -556,10 +439,7 @@ impl MutableOpResolver {
         let inner_ref = &mut self.inner;
 
         cpp!(unsafe [inner_ref as "tflite::MicroMutableOpResolver<128>*"] {
-            inner_ref->AddBuiltin(
-                tflite::BuiltinOperator_UNPACK,
-                tflite::ops::micro::Register_UNPACK()
-            );
+            inner_ref->AddUnpack();
         });
 
         self
@@ -571,10 +451,7 @@ impl MutableOpResolver {
         let inner_ref = &mut self.inner;
 
         cpp!(unsafe [inner_ref as "tflite::MicroMutableOpResolver<128>*"] {
-            inner_ref->AddBuiltin(
-                tflite::BuiltinOperator_NEG,
-                tflite::ops::micro::Register_NEG()
-            );
+            inner_ref->AddNeg();
         });
 
         self
@@ -585,10 +462,7 @@ impl MutableOpResolver {
         let inner_ref = &mut self.inner;
 
         cpp!(unsafe [inner_ref as "tflite::MicroMutableOpResolver<128>*"] {
-            inner_ref->AddBuiltin(
-                tflite::BuiltinOperator_ADD,
-                tflite::ops::micro::Register_ADD()
-            );
+            inner_ref->AddAdd();
         });
 
         self
@@ -599,10 +473,7 @@ impl MutableOpResolver {
         let inner_ref = &mut self.inner;
 
         cpp!(unsafe [inner_ref as "tflite::MicroMutableOpResolver<128>*"] {
-            inner_ref->AddBuiltin(
-                tflite::BuiltinOperator_MUL,
-                tflite::ops::micro::Register_MUL()
-            );
+            inner_ref->AddMul();
         });
 
         self
@@ -613,10 +484,7 @@ impl MutableOpResolver {
         let inner_ref = &mut self.inner;
 
         cpp!(unsafe [inner_ref as "tflite::MicroMutableOpResolver<128>*"] {
-            inner_ref->AddBuiltin(
-                tflite::BuiltinOperator_SUB,
-                tflite::ops::micro::Register_SUB()
-            );
+            inner_ref->AddSub();
         });
 
         self
@@ -627,10 +495,7 @@ impl MutableOpResolver {
         let inner_ref = &mut self.inner;
 
         cpp!(unsafe [inner_ref as "tflite::MicroMutableOpResolver<128>*"] {
-            inner_ref->AddBuiltin(
-                tflite::BuiltinOperator_QUANTIZE,
-                tflite::ops::micro::Register_QUANTIZE()
-            );
+            inner_ref->AddQuantize();
         });
 
         self
@@ -641,10 +506,7 @@ impl MutableOpResolver {
         let inner_ref = &mut self.inner;
 
         cpp!(unsafe [inner_ref as "tflite::MicroMutableOpResolver<128>*"] {
-            inner_ref->AddBuiltin(
-                tflite::BuiltinOperator_DEQUANTIZE,
-                tflite::ops::micro::Register_DEQUANTIZE()
-            );
+            inner_ref->AddDequantize();
         });
 
         self
@@ -655,10 +517,7 @@ impl MutableOpResolver {
         let inner_ref = &mut self.inner;
 
         cpp!(unsafe [inner_ref as "tflite::MicroMutableOpResolver<128>*"] {
-            inner_ref->AddBuiltin(
-                tflite::BuiltinOperator_RELU,
-                tflite::ops::micro::Register_RELU()
-            );
+            inner_ref->AddRelu();
         });
 
         self
@@ -669,10 +528,7 @@ impl MutableOpResolver {
         let inner_ref = &mut self.inner;
 
         cpp!(unsafe [inner_ref as "tflite::MicroMutableOpResolver<128>*"] {
-            inner_ref->AddBuiltin(
-                tflite::BuiltinOperator_RELU6,
-                tflite::ops::micro::Register_RELU6()
-            );
+            inner_ref->AddRelu6();
         });
 
         self
@@ -683,10 +539,7 @@ impl MutableOpResolver {
         let inner_ref = &mut self.inner;
 
         cpp!(unsafe [inner_ref as "tflite::MicroMutableOpResolver<128>*"] {
-            inner_ref->AddBuiltin(
-                tflite::BuiltinOperator_MEAN,
-                tflite::ops::micro::Register_MEAN()
-            );
+            inner_ref->AddMean();
         });
 
         self
@@ -697,10 +550,7 @@ impl MutableOpResolver {
         let inner_ref = &mut self.inner;
 
         cpp!(unsafe [inner_ref as "tflite::MicroMutableOpResolver<128>*"] {
-            inner_ref->AddBuiltin(
-                tflite::BuiltinOperator_RESIZE_NEAREST_NEIGHBOR,
-                tflite::ops::micro::Register_RESIZE_NEAREST_NEIGHBOR()
-            );
+            inner_ref->AddResizeNearestNeighbor();
         });
 
         self
@@ -711,10 +561,7 @@ impl MutableOpResolver {
         let inner_ref = &mut self.inner;
 
         cpp!(unsafe [inner_ref as "tflite::MicroMutableOpResolver<128>*"] {
-            inner_ref->AddBuiltin(
-                tflite::BuiltinOperator_L2_NORMALIZATION,
-                tflite::ops::micro::Register_L2_NORMALIZATION()
-            );
+            inner_ref->AddL2Normalization();
         });
 
         self
@@ -725,10 +572,7 @@ impl MutableOpResolver {
         let inner_ref = &mut self.inner;
 
         cpp!(unsafe [inner_ref as "tflite::MicroMutableOpResolver<128>*"] {
-            inner_ref->AddBuiltin(
-                tflite::BuiltinOperator_TANH,
-                tflite::ops::micro::Register_TANH()
-            );
+            inner_ref->AddTanh();
         });
 
         self
